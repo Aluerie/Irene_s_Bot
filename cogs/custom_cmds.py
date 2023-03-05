@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List
 import twitchio
 from twitchio.ext import commands, routines
 
+from utils.const import ALUERIE_TWITCH_ID
 from utils.database import DRecord
 
 if TYPE_CHECKING:
@@ -44,7 +45,7 @@ class CustomCommands(commands.Cog):
                 """
         # one day if we introduce the bot to public we will need some refactoring around it
         # cmd_cache will need to be different type
-        ALUERIE_TWITCH_ID = 180499648
+
         rows: List[TwitchCommands] = await self.bot.pool.fetch(query, ALUERIE_TWITCH_ID)
         for row in rows:
             self.cmd_cache[row.command_name] = row.command_text

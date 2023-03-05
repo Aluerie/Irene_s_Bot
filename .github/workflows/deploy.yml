@@ -1,0 +1,27 @@
+name: Deploy
+run-name: Deploy
+
+on:
+  push:
+    branches:
+      - 'main'
+        
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3  
+    
+    - name: Restarting the bot
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd ./AlueBot
+          git pull
+          source venv/bin/activate
+          pip install -r ./requirements.txt
+          sudo systemctl restart aluebot.service
