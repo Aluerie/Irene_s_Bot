@@ -1,2 +1,2 @@
 # AlueBot
-💜 Personal Twitch Bot
+🎬 Personal Twitch Bot

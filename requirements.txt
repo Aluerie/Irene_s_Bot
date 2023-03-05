@@ -1,0 +1,9 @@
+twitchio[speed] @ git+https://github.com/TwitchIO/TwitchIO.git
+
+asyncpg~=0.27
+click~=8.4.6
+steam~=1.4.4
+protobuf~=3.20.1
+dota2~=1.1.0
+vdf~=3.3
+uvloop

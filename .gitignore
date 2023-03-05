@@ -1,0 +1,13 @@
+__pycache__/
+venv/
+.idea/
+.vscode/
+
+.ipynb_checkpoints
+*.ipynb
+
+*.ini
+
+config.py
+
+.logs/
