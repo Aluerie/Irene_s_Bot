@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Dict, List, TypedDict
 
 import twitchio
 from twitchio.ext import commands, routines
@@ -11,10 +11,10 @@ from utils.database import DRecord
 if TYPE_CHECKING:
     from utils.bot import AlueBot
 
-
-class TwitchCommands(DRecord):
-    command_name: str
-    command_text: str
+    class TwitchCommands(DRecord):
+        user_id: int
+        cmd_name: str
+        cmd_text: str
 
 
 def is_mod():
@@ -34,21 +34,19 @@ def is_mod():
 class CustomCommands(commands.Cog):
     def __init__(self, bot: AlueBot):
         self.bot: AlueBot = bot
-        self.cmd_cache: dict = dict()
+        self.cmd_cache: Dict[int, Dict[str, str]] = dict()
         self.populate_cache.start()
 
     @routines.routine(iterations=1)
     async def populate_cache(self):
-        query = """ SELECT command_name, command_text
+        query = """ SELECT user_id, cmd_name, cmd_text
                     FROM twitch_commands
-                    WHERE streamer_id=$1
+                    WHERE user_id=$1
                 """
-        # one day if we introduce the bot to public we will need some refactoring around it
-        # cmd_cache will need to be different type
 
         rows: List[TwitchCommands] = await self.bot.pool.fetch(query, ALUERIE_TWITCH_ID)
         for row in rows:
-            self.cmd_cache[row.command_name] = row.command_text
+            self.cmd_cache[row.user_id][row.cmd_name] = row.cmd_text
 
     @commands.Cog.event()
     async def event_message(self, message: twitchio.Message):
@@ -56,9 +54,10 @@ class CustomCommands(commands.Cog):
         if message.echo:
             return
 
-        for k, p in zip(self.cmd_cache, self.bot.prefixes):
-            if message.content.startswith(f"{p}{k}"):
-                await message.channel.send(self.cmd_cache[k])
+        user = await message.channel.user()
+        for k, p in zip(self.cmd_cache[user.id], self.bot.prefixes):
+            if message.content.startswith(f"{p}{k}"):  # type: ignore
+                await message.channel.send(self.cmd_cache[user.id][k])
 
     async def cmd_group(self, ctx: commands.Context):
         await ctx.send(f"Sorry, you should use it with subcommands add, del, edit")
@@ -69,35 +68,41 @@ class CustomCommands(commands.Cog):
     @is_mod()
     @cmd.command()
     async def add(self, ctx: commands.Context, cmd_name: str, *, text: str):
-        query = """ INSERT INTO twitch_commands (streamer_id, command_name, command_text)
-                    VALUES ($1, $2, $3)
+        query = """ INSERT INTO twitch_commands 
+                        (user_id, cmd_name, cmd_text)
+                        VALUES ($1, $2, $3)
+                        ??????????????????????????????
+                        ON CONFLICT DO 
+                            INSERT INTO twitch_streamers
+                            (user_id, user_name)
+                            VALUES ($1, $4)
                 """
-        stream_user = await ctx.message.channel.user()
-        await self.bot.pool.execute(query, stream_user.id, cmd_name, text)
-        self.cmd_cache[cmd_name] = text
+        user = await ctx.message.channel.user()
+        await self.bot.pool.execute(query, user.id, cmd_name, text, user.name)
+        self.cmd_cache[user.id][cmd_name] = text
         await ctx.send(f"Added the command {cmd_name}.")
 
     @is_mod()
     @cmd.command(name="del")
     async def delete(self, ctx: commands.Context, cmd_name: str):
         query = """ DELETE FROM twitch_commands 
-                    WHERE streamer_id=$1 AND command_name=$2
+                    WHERE user_id=$1 AND cmd_name=$2
                 """
-        stream_user = await ctx.message.channel.user()
-        await self.bot.pool.execute(query, stream_user.id, cmd_name)
-        self.cmd_cache.pop(cmd_name)
+        user = await ctx.message.channel.user()
+        await self.bot.pool.execute(query, user.id, cmd_name)
+        self.cmd_cache[user.id].pop(cmd_name)
         await ctx.send(f"Deleted the command {cmd_name}")
 
     @is_mod()
     @cmd.command()
     async def edit(self, ctx: commands.Context, cmd_name: str, *, text: str):
         query = """ UPDATE twitch_commands 
-                    SET command_text=$3
-                    WHERE streamer_id=$1 AND command_name=$2
+                    SET cmd_text=$3
+                    WHERE user_id=$1 AND cmd_name=$2
                 """
-        stream_user = await ctx.message.channel.user()
-        await self.bot.pool.execute(query, stream_user.id, cmd_name, text)
-        self.cmd_cache[cmd_name] = text
+        user = await ctx.message.channel.user()
+        await self.bot.pool.execute(query, user.id, cmd_name, text)
+        self.cmd_cache[user.id][cmd_name] = text
         await ctx.send(f"Edited the command {cmd_name}.")
 
     @cmd.command(name="list")
