@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from typing import TYPE_CHECKING
 
@@ -16,9 +17,10 @@ class Management(commands.Cog):
         self.bot: AlueBot = bot
 
     @is_aluerie()
-    @commands.command()
+    @commands.command(aliases=['kill'])
     async def maintenance(self, ctx: commands.Context):
-        await ctx.send("Shutting down the bot")
+        await ctx.send("Shutting down the bot in 3 2 1")
+        await asyncio.sleep(3)
         try:
             os.system("sudo systemctl stop aluebot")
         except Exception as error:

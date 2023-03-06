@@ -9,7 +9,7 @@ def is_mod():
         author = ctx.message.author
         # if isinstance(author, twitchio.PartialChatter):
         #     author = ???
-        if author.is_mod:
+        if author.is_mod:  # type: ignore # the dev said it's fine
             return True
         else:
             raise commands.CheckFailure("Only moderators can use this command")
