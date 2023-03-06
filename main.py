@@ -6,7 +6,7 @@ import sys
 from contextlib import contextmanager
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import click
 
@@ -70,10 +70,13 @@ async def bot_start():
         click.echo("Could not set up PostgreSQL. Exiting.", file=sys.stderr)
         log.exception("Could not set up PostgreSQL. Exiting.")
         return
-
-    async with AlueBot() as bot:
-        bot.pool = pool
-        await bot.start()
+    
+    query = "SELECT user_name FROM twitch_users"
+    initial_channels: List[str] = [row for row, in await pool.fetch(query)]
+    # async with AlueBot() as bot:
+    bot = AlueBot(initial_channels)
+    bot.pool = pool
+    await bot.start()
 
 
 @click.group(invoke_without_command=True, options_metavar="[options]")

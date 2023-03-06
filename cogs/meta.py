@@ -6,6 +6,7 @@ import twitchio
 from twitchio.ext import commands
 
 from utils.const import ALUERIE_TWITCH_NAME
+from utils.checks import is_aluerie
 
 if TYPE_CHECKING:
     from utils.bot import AlueBot
@@ -31,6 +32,25 @@ class Meta(commands.Cog):
     @commands.command()
     async def source(self, ctx: commands.Context):
         await ctx.send(f"{self.bot.repo} DankReading")
+
+    @is_aluerie()
+    @commands.command()
+    async def channel_add(self, ctx: commands.Context, channel: twitchio.Channel):
+        query = """ INSERT INTO twitch_users
+                    (user_id, user_name)
+                    VALUES ($1, $2)
+                """
+        await self.bot.pool.execute(query, (await channel.user()).id, channel.name)
+        await ctx.send(f"Added the channel {channel.name}.")
+
+    @is_aluerie()
+    @commands.command()
+    async def channel_del(self, ctx: commands.Context, channel: twitchio.Channel):
+        query = """ DELETE FROM twitch_users 
+                    WHERE user_id=$1
+                """
+        await self.bot.pool.execute(query, (await channel.user()).id)
+        await ctx.send(f"Deleted the channel {channel.name}")
 
 
 def prepare(bot: AlueBot):

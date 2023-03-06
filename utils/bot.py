@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import sys
 import traceback
-from typing import TYPE_CHECKING, Optional, Type
+from typing import TYPE_CHECKING, Optional, Type, List
 
 import asyncpg
 from twitchio.ext import commands
@@ -23,9 +23,10 @@ log = logging.getLogger(__name__)
 class AlueBot(commands.Bot):
     pool: asyncpg.Pool
 
-    def __init__(self):
+        
+    def __init__(self, initial_channels: List[str]):
         self.prefixes = ["!", "?", "$"]
-        super().__init__(token=TWITCH_TOKEN, prefix=self.prefixes, initial_channels=["Aluerie"])
+        super().__init__(token=TWITCH_TOKEN, prefix=self.prefixes, initial_channels=initial_channels)
 
         self.repo = 'https://github.com/Aluerie/AlueBot'
 
@@ -47,6 +48,8 @@ class AlueBot(commands.Bot):
         # print('---------------------')
         # print(error, type(error))
         # getattr(ctx.command, 'name', 'Unknown') only bcs typing
+        if isinstance(error, commands.BadArgument):
+            await ctx.send(f"{error}")
         if isinstance(error, commands.CheckFailure):
             await ctx.send(f"{error}")
             # print(f"{type(error)} in {getattr(ctx.command, 'name', 'Unknown')}: {error}:", file=sys.stderr)
