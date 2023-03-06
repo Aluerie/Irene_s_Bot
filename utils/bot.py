@@ -27,6 +27,8 @@ class AlueBot(commands.Bot):
         self.prefixes = ["!", "?", "$"]
         super().__init__(token=TWITCH_TOKEN, prefix=self.prefixes, initial_channels=["Aluerie"])
 
+        self.repo = 'https://github.com/Aluerie/AlueBot'
+
     async def __aenter__(self) -> Self:
         return self
 

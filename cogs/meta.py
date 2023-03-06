@@ -28,6 +28,10 @@ class Meta(commands.Cog):
     async def hello(self, ctx: commands.Context):
         await ctx.send(f"Hello @{ctx.author.name} yo")
 
+    @commands.command()
+    async def source(self, ctx: commands.Context):
+        await ctx.send(f"{self.bot.repo} DankReading")
+
 
 def prepare(bot: AlueBot):
     bot.add_cog(Meta(bot))
