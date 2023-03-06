@@ -22,6 +22,7 @@ class Management(commands.Cog):
         await ctx.send("Shutting down the bot in 3 2 1")
         await asyncio.sleep(3)
         try:
+            # non systemctl users - sorry
             os.system("sudo systemctl stop aluebot")
         except Exception as error:
             print(error)
