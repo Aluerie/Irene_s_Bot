@@ -16,7 +16,7 @@ class Meta(commands.Cog):
     def __init__(self, bot: AlueBot):
         self.bot: AlueBot = bot
 
-    @commands.Cog.event()
+    @commands.Cog.event()  # type: ignore # one day they will fix it  
     async def event_ready(self):
         channel: twitchio.Channel = self.bot.get_channel(ALUERIE_TWITCH_NAME) #type: ignore
         await channel.send('hi the bot is reloaded')

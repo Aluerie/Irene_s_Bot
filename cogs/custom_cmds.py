@@ -34,7 +34,7 @@ class CustomCommands(commands.Cog):
         for row in rows:
             self.cmd_cache.setdefault(row.user_id, {})[row.cmd_name] = row.cmd_text
 
-    @commands.Cog.event()
+    @commands.Cog.event()  # type: ignore # one day they will fix it  
     async def event_message(self, message: twitchio.Message):
         # An event inside a cog!
         if message.echo:
