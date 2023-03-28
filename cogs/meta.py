@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+# import pkg_resources
 import twitchio
 from twitchio.ext import commands
 
-from utils.const import ALUERIE_TWITCH_NAME
 from utils.checks import is_aluerie
+from utils.const import ALUERIE_TWITCH_NAME
 
 if TYPE_CHECKING:
     from utils.bot import AlueBot
@@ -16,10 +17,11 @@ class Meta(commands.Cog):
     def __init__(self, bot: AlueBot):
         self.bot: AlueBot = bot
 
-    @commands.Cog.event()  # type: ignore # one day they will fix it  
+    @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_ready(self):
-        channel: twitchio.Channel = self.bot.get_channel(ALUERIE_TWITCH_NAME) #type: ignore
-        await channel.send('hi the bot is reloaded')
+        channel: twitchio.Channel = self.bot.get_channel(ALUERIE_TWITCH_NAME)  # type: ignore
+        # version = pkg_resources.get_distribution("twitchio").version
+        await channel.send(f"hi the bot is reloaded.")
 
     @commands.command()
     async def ping(self, ctx: commands.Context):
