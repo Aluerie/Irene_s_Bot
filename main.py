@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, List
 
 import click
 
-from utils.bot import AlueBot
+from utils.bot import LueByt
 from utils.database import create_pool
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ def setup_logging():
         Path(".logs/").mkdir(parents=True, exist_ok=True)
         # File Handler
         file_handler = RotatingFileHandler(
-            filename=f".logs/aluebot.log",
+            filename=f".logs/luebyt.log",
             encoding="utf-8",
             mode="w",
             maxBytes=16 * 1024 * 1024,  # 16 MiB
@@ -70,11 +70,11 @@ async def bot_start():
         click.echo("Could not set up PostgreSQL. Exiting.", file=sys.stderr)
         log.exception("Could not set up PostgreSQL. Exiting.")
         return
-    
+
     query = "SELECT user_name FROM twitch_users"
     initial_channels: List[str] = [row for row, in await pool.fetch(query)]
-    # async with AlueBot() as bot:
-    bot = AlueBot(initial_channels)
+    # async with LueByt() as bot:
+    bot = LueByt(initial_channels)
     bot.pool = pool
     await bot.start()
 

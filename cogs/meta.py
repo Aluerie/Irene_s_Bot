@@ -10,12 +10,12 @@ from utils.checks import is_aluerie
 from utils.const import ALUERIE_TWITCH_NAME
 
 if TYPE_CHECKING:
-    from utils.bot import AlueBot
+    from utils.bot import LueByt
 
 
 class Meta(commands.Cog):
-    def __init__(self, bot: AlueBot):
-        self.bot: AlueBot = bot
+    def __init__(self, bot: LueByt):
+        self.bot: LueByt = bot
 
     @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_ready(self):
@@ -55,5 +55,5 @@ class Meta(commands.Cog):
         await ctx.send(f"Deleted the channel {channel.name}")
 
 
-def prepare(bot: AlueBot):
+def prepare(bot: LueByt):
     bot.add_cog(Meta(bot))

@@ -9,26 +9,26 @@ from twitchio.ext import commands
 from utils.checks import is_aluerie
 
 if TYPE_CHECKING:
-    from utils.bot import AlueBot
+    from utils.bot import LueByt
 
 
 class Management(commands.Cog):
-    def __init__(self, bot: AlueBot):
-        self.bot: AlueBot = bot
+    def __init__(self, bot: LueByt):
+        self.bot: LueByt = bot
 
     @is_aluerie()
-    @commands.command(aliases=['kill'])
+    @commands.command(aliases=["kill"])
     async def maintenance(self, ctx: commands.Context):
         await ctx.send("Shutting down the bot in 3 2 1")
         await asyncio.sleep(3)
         try:
             # non systemctl users - sorry
-            os.system("sudo systemctl stop aluebot")
+            os.system("sudo systemctl stop luebyt")
         except Exception as error:
             print(error)
             # it might not go off
             await ctx.send("Something went wrong.")
 
 
-def prepare(bot: AlueBot):
+def prepare(bot: LueByt):
     bot.add_cog(Management(bot))

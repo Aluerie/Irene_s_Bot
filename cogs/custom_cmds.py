@@ -9,7 +9,7 @@ from twitchio.ext import commands, routines
 from utils.checks import is_mod
 
 if TYPE_CHECKING:
-    from utils.bot import AlueBot
+    from utils.bot import LueByt
     from utils.database import DRecord
 
     class TwitchCommands(DRecord):
@@ -19,8 +19,8 @@ if TYPE_CHECKING:
 
 
 class CustomCommands(commands.Cog):
-    def __init__(self, bot: AlueBot):
-        self.bot: AlueBot = bot
+    def __init__(self, bot: LueByt):
+        self.bot: LueByt = bot
         self.cmd_cache: Dict[int, Dict[str, str]] = dict()
         self.populate_cache.start()
 
@@ -34,7 +34,7 @@ class CustomCommands(commands.Cog):
         for row in rows:
             self.cmd_cache.setdefault(row.user_id, {})[row.cmd_name] = row.cmd_text
 
-    @commands.Cog.event()  # type: ignore # one day they will fix it  
+    @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_message(self, message: twitchio.Message):
         # An event inside a cog!
         if message.echo:
@@ -59,10 +59,10 @@ class CustomCommands(commands.Cog):
                         VALUES ($1, $2, $3)
                 """
         user = await ctx.message.channel.user()
-        try: 
+        try:
             await self.bot.pool.execute(query, user.id, cmd_name, text)
         except asyncpg.UniqueViolationError:
-            raise commands.BadArgument('There already exists a command with such name.')
+            raise commands.BadArgument("There already exists a command with such name.")
         self.cmd_cache.setdefault(user.id, {})[cmd_name] = text
         await ctx.send(f"Added the command {cmd_name}.")
 
@@ -76,7 +76,7 @@ class CustomCommands(commands.Cog):
         user = await ctx.message.channel.user()
         val = await self.bot.pool.fetchval(query, user.id, cmd_name)
         if val is None:
-            raise commands.BadArgument('There is no command with such name.')
+            raise commands.BadArgument("There is no command with such name.")
         self.cmd_cache[user.id].pop(cmd_name)
         await ctx.send(f"Deleted the command {cmd_name}")
 
@@ -91,8 +91,8 @@ class CustomCommands(commands.Cog):
         user = await ctx.message.channel.user()
         val = await self.bot.pool.fetchval(query, user.id, cmd_name, text)
         if val is None:
-            raise commands.BadArgument('There is no command with such name.')
-        
+            raise commands.BadArgument("There is no command with such name.")
+
         self.cmd_cache[user.id][cmd_name] = text
         await ctx.send(f"Edited the command {cmd_name}.")
 
@@ -107,5 +107,5 @@ class CustomCommands(commands.Cog):
         await ctx.send(", ".join(cache_list + bot_cmds))
 
 
-def prepare(bot: AlueBot):
+def prepare(bot: LueByt):
     bot.add_cog(CustomCommands(bot))

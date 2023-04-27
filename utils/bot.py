@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import sys
 import traceback
-from typing import TYPE_CHECKING, Optional, Type, List
+from typing import TYPE_CHECKING, List, Optional, Type
 
 import asyncpg
 from twitchio.ext import commands
@@ -20,15 +20,14 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class AlueBot(commands.Bot):
+class LueByt(commands.Bot):
     pool: asyncpg.Pool
 
-        
     def __init__(self, initial_channels: List[str]):
         self.prefixes = ["!", "?", "$"]
         super().__init__(token=TWITCH_TOKEN, prefix=self.prefixes, initial_channels=initial_channels)
 
-        self.repo = 'https://github.com/Aluerie/AlueBot'
+        self.repo = "https://github.com/Aluerie/LueByt"
 
     async def __aenter__(self) -> Self:
         return self
@@ -42,7 +41,7 @@ class AlueBot(commands.Bot):
         await self.close()
 
     async def event_ready(self):
-        log.info(f"TwitchBot Ready as {self.nick} | user_id = {self.user_id}")
+        log.info(f"LueByt Ready as {self.nick} | user_id = {self.user_id}")
 
     async def event_command_error(self, ctx: commands.Context, error: Exception) -> None:
         # print('---------------------')
@@ -57,8 +56,8 @@ class AlueBot(commands.Bot):
             #  idk otherwise we just spam console with commands from other bots and from my event thing
             pass
         elif isinstance(error, commands.MissingRequiredArgument):
-            missing_arg = ', '.join([f'{x.name}' for x in error.args]) 
-            await ctx.send(f'Missing required argument(-s): {missing_arg}')
+            missing_arg = ", ".join([f"{x.name}" for x in error.args])
+            await ctx.send(f"Missing required argument(-s): {missing_arg}")
         else:
             print(f"Ignoring exception in command {getattr(ctx.command, 'name', 'Unknown')}: {error}:", file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)

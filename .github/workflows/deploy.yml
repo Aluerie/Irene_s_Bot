@@ -20,8 +20,8 @@ jobs:
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd ./AlueBot
+          cd ./LueByt
           git pull
           source venv/bin/activate
           pip install -r ./requirements.txt
-          sudo systemctl restart aluebot.service
+          sudo systemctl restart luebyt.service
