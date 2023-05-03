@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from typing import TYPE_CHECKING, Dict, List
 
 import asyncpg
@@ -41,7 +42,7 @@ class CustomCommands(commands.Cog):
             return
 
         user = await message.channel.user()
-        for k, p in zip(self.cmd_cache.get(user.id, []), self.bot.prefixes):
+        for k, p in itertools.product(self.cmd_cache.get(user.id, []), self.bot.prefixes):
             if message.content.startswith(f"{p}{k}"):  # type: ignore
                 await message.channel.send(self.cmd_cache[user.id][k])
 
