@@ -1,7 +1,10 @@
 __pycache__/
 venv/
 .idea/
-.vscode/
+
+.vscode/*
+!.vscode/launch.json
+#!.vscode/settings.json
 
 .ipynb_checkpoints
 *.ipynb
@@ -10,4 +13,4 @@ venv/
 
 config.py
 
-.logs/
+.temp/

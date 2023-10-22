@@ -14,26 +14,26 @@ if TYPE_CHECKING:
     from utils.database import DRecord
 
     class TwitchCommands(DRecord):
-        user_id: int
-        cmd_name: str
-        cmd_text: str
+        streamer_id: int
+        command_name: str
+        content: str
 
 
 class CustomCommands(commands.Cog):
     def __init__(self, bot: LueByt):
         self.bot: LueByt = bot
-        self.cmd_cache: Dict[int, Dict[str, str]] = dict()
+        self.command_cache: Dict[int, Dict[str, str]] = dict()
         self.populate_cache.start()
 
     @routines.routine(iterations=1)
     async def populate_cache(self):
-        query = """ SELECT user_id, cmd_name, cmd_text
-                    FROM twitch_commands
+        query = """ SELECT streamer_id, command_name, content
+                    FROM chat_commands
                 """
 
         rows: List[TwitchCommands] = await self.bot.pool.fetch(query)
         for row in rows:
-            self.cmd_cache.setdefault(row.user_id, {})[row.cmd_name] = row.cmd_text
+            self.command_cache.setdefault(row.streamer_id, {})[row.command_name] = row.content
 
     @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_message(self, message: twitchio.Message):
@@ -42,9 +42,9 @@ class CustomCommands(commands.Cog):
             return
 
         user = await message.channel.user()
-        for k, p in itertools.product(self.cmd_cache.get(user.id, []), self.bot.prefixes):
+        for k, p in itertools.product(self.command_cache.get(user.id, []), self.bot.prefixes):
             if message.content.startswith(f"{p}{k}"):  # type: ignore
-                await message.channel.send(self.cmd_cache[user.id][k])
+                await message.channel.send(self.command_cache[user.id][k])
 
     async def cmd_group(self, ctx: commands.Context):
         await ctx.send(f"Sorry, you should use it with subcommands add, del, edit")
@@ -55,8 +55,8 @@ class CustomCommands(commands.Cog):
     @is_mod()
     @cmd.command()
     async def add(self, ctx: commands.Context, cmd_name: str, *, text: str):
-        query = """ INSERT INTO twitch_commands 
-                        (user_id, cmd_name, cmd_text)
+        query = """ INSERT INTO chat_commands
+                        (streamer_id, command_name, content)
                         VALUES ($1, $2, $3)
                 """
         user = await ctx.message.channel.user()
@@ -64,42 +64,42 @@ class CustomCommands(commands.Cog):
             await self.bot.pool.execute(query, user.id, cmd_name, text)
         except asyncpg.UniqueViolationError:
             raise commands.BadArgument("There already exists a command with such name.")
-        self.cmd_cache.setdefault(user.id, {})[cmd_name] = text
+        self.command_cache.setdefault(user.id, {})[cmd_name] = text
         await ctx.send(f"Added the command {cmd_name}.")
 
     @is_mod()
     @cmd.command(name="del")
-    async def delete(self, ctx: commands.Context, cmd_name: str):
-        query = """ DELETE FROM twitch_commands 
-                    WHERE user_id=$1 AND cmd_name=$2
-                    RETURNING cmd_name
+    async def delete(self, ctx: commands.Context, command_name: str):
+        query = """ DELETE FROM chat_commands
+                    WHERE streamer_id=$1 AND command_name=$2
+                    RETURNING command_name
                 """
         user = await ctx.message.channel.user()
-        val = await self.bot.pool.fetchval(query, user.id, cmd_name)
+        val = await self.bot.pool.fetchval(query, user.id, command_name)
         if val is None:
             raise commands.BadArgument("There is no command with such name.")
-        self.cmd_cache[user.id].pop(cmd_name)
-        await ctx.send(f"Deleted the command {cmd_name}")
+        self.command_cache[user.id].pop(command_name)
+        await ctx.send(f"Deleted the command {command_name}")
 
     @is_mod()
     @cmd.command()
-    async def edit(self, ctx: commands.Context, cmd_name: str, *, text: str):
-        query = """ UPDATE twitch_commands 
-                    SET cmd_text=$3
-                    WHERE user_id=$1 AND cmd_name=$2
-                    RETURNING cmd_name
+    async def edit(self, ctx: commands.Context, command_name: str, *, text: str):
+        query = """ UPDATE chat_commands
+                    SET content=$3
+                    WHERE streamer_id=$1 AND command_name=$2
+                    RETURNING command_name
                 """
         user = await ctx.message.channel.user()
-        val = await self.bot.pool.fetchval(query, user.id, cmd_name, text)
+        val = await self.bot.pool.fetchval(query, user.id, command_name, text)
         if val is None:
             raise commands.BadArgument("There is no command with such name.")
 
-        self.cmd_cache[user.id][cmd_name] = text
-        await ctx.send(f"Edited the command {cmd_name}.")
+        self.command_cache[user.id][command_name] = text
+        await ctx.send(f"Edited the command {command_name}.")
 
     @cmd.command(name="list")
     async def cmd_list(self, ctx: commands.Context):
-        cache_list = [f"!{name}" for _k, v in self.cmd_cache.items() for name in v]
+        cache_list = [f"!{name}" for _k, v in self.command_cache.items() for name in v]
         bot_cmds = [
             f"!{v.full_name}"
             for _k, v in self.bot.commands.items()

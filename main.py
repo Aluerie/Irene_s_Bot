@@ -41,14 +41,14 @@ def setup_logging():
         log.addHandler(handler)
 
         # ensure logs folder
-        Path(".logs/").mkdir(parents=True, exist_ok=True)
+        Path(".temp/").mkdir(parents=True, exist_ok=True)
         # File Handler
         file_handler = RotatingFileHandler(
-            filename=f".logs/luebyt.log",
+            filename=f".temp/luebyt.log",
             encoding="utf-8",
             mode="w",
             maxBytes=16 * 1024 * 1024,  # 16 MiB
-            backupCount=5,  # Rotate through 5 files
+            backupCount=1,  # Rotate through 5 files
         )
         file_handler.setFormatter(formatter)
         log.addHandler(file_handler)
@@ -71,7 +71,7 @@ async def bot_start():
         log.exception("Could not set up PostgreSQL. Exiting.")
         return
 
-    query = "SELECT user_name FROM twitch_users"
+    query = "SELECT user_name FROM joined_streamers"
     initial_channels: List[str] = [row for row, in await pool.fetch(query)]
     # async with LueByt() as bot:
     bot = LueByt(initial_channels)

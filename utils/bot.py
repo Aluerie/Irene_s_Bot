@@ -59,7 +59,8 @@ class LueByt(commands.Bot):
             missing_arg = ", ".join([f"{x.name}" for x in error.args])
             await ctx.send(f"Missing required argument(-s): {missing_arg}")
         else:
-            print(f"Ignoring exception in command {getattr(ctx.command, 'name', 'Unknown')}: {error}:", file=sys.stderr)
+            command_name = getattr(ctx.command, "name", "unknown")
+            print(f"Ignoring exception in !{command_name} command: {error}:", file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     async def start(self):

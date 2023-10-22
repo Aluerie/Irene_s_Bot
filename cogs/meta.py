@@ -38,7 +38,7 @@ class Meta(commands.Cog):
     @is_aluerie()
     @commands.command()
     async def channel_add(self, ctx: commands.Context, channel: twitchio.Channel):
-        query = """ INSERT INTO twitch_users
+        query = """ INSERT INTO joined_streamers
                     (user_id, user_name)
                     VALUES ($1, $2)
                 """
@@ -48,7 +48,7 @@ class Meta(commands.Cog):
     @is_aluerie()
     @commands.command()
     async def channel_del(self, ctx: commands.Context, channel: twitchio.Channel):
-        query = """ DELETE FROM twitch_users 
+        query = """ DELETE FROM joined_streamers
                     WHERE user_id=$1
                 """
         await self.bot.pool.execute(query, (await channel.user()).id)

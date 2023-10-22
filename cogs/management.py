@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from twitchio.ext import commands
 
-from utils.checks import is_aluerie
+from utils import checks
 
 if TYPE_CHECKING:
     from utils.bot import LueByt
@@ -16,7 +16,7 @@ class Management(commands.Cog):
     def __init__(self, bot: LueByt):
         self.bot: LueByt = bot
 
-    @is_aluerie()
+    @checks.is_aluerie()
     @commands.command(aliases=["kill"])
     async def maintenance(self, ctx: commands.Context):
         await ctx.send("Shutting down the bot in 3 2 1")
