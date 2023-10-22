@@ -99,11 +99,9 @@ class CustomCommands(commands.Cog):
 
     @cmd.command(name="list")
     async def cmd_list(self, ctx: commands.Context):
-        cache_list = [f"!{name}" for _k, v in self.command_cache.items() for name in v]
+        cache_list = [f"!{name}" for v in self.command_cache.values() for name in v]
         bot_cmds = [
-            f"!{v.full_name}"
-            for _k, v in self.bot.commands.items()
-            if not v._checks and not isinstance(v, commands.Group)
+            f"!{v.full_name}" for v in self.bot.commands.values() if not v._checks and not isinstance(v, commands.Group)
         ]
         await ctx.send(", ".join(cache_list + bot_cmds))
 
