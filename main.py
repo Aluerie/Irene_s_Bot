@@ -74,18 +74,19 @@ async def bot_start():
         return
 
     access_token = config.TWITCH_ACCESS_TOKEN
-    if not await tokens.verify_token(access_token):
-        access_token = await tokens.refresh_access_token(
-            refresh_token=config.TWITCH_REFRESH_TOKEN,
-            client_id=config.TWITCH_CLIENT_ID,
-            secret=config.TWITCH_CLIENT_SECRET,
-        )
+    # if not await tokens.verify_token(access_token):
+    #     access_token = await tokens.refresh_access_token(
+    #         refresh_token=config.TWITCH_REFRESH_TOKEN,
+    #         client_id=config.TWITCH_CLIENT_ID,
+    #         secret=config.TWITCH_CLIENT_SECRET,
+    #     )
 
     query = "SELECT user_name FROM joined_streamers"
     initial_channels: List[str] = [row for row, in await pool.fetch(query)]
-    async with LueByt(access_token, initial_channels) as bot:
-        bot.pool = pool
-        await bot.start()
+    # async with LueByt(access_token, initial_channels) as bot:
+    bot = LueByt(access_token, initial_channels)
+    bot.pool = pool
+    await bot.start()
 
 
 @click.group(invoke_without_command=True, options_metavar="[options]")
