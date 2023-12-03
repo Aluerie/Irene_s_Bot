@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, List
 
 import click
 
+import config
+from utils import tokens
 from utils.bot import LueByt
 from utils.database import create_pool
 
@@ -48,7 +50,7 @@ def setup_logging():
             encoding="utf-8",
             mode="w",
             maxBytes=16 * 1024 * 1024,  # 16 MiB
-            backupCount=1,  # Rotate through 5 files
+            backupCount=2,  # Rotate through 2 files
         )
         file_handler.setFormatter(formatter)
         log.addHandler(file_handler)
@@ -71,12 +73,19 @@ async def bot_start():
         log.exception("Could not set up PostgreSQL. Exiting.")
         return
 
+    access_token = config.TWITCH_ACCESS_TOKEN
+    if not await tokens.verify_token(access_token):
+        access_token = await tokens.refresh_access_token(
+            refresh_token=config.TWITCH_REFRESH_TOKEN,
+            client_id=config.TWITCH_CLIENT_ID,
+            secret=config.TWITCH_CLIENT_SECRET,
+        )
+
     query = "SELECT user_name FROM joined_streamers"
     initial_channels: List[str] = [row for row, in await pool.fetch(query)]
-    # async with LueByt() as bot:
-    bot = LueByt(initial_channels)
-    bot.pool = pool
-    await bot.start()
+    async with LueByt(access_token, initial_channels) as bot:
+        bot.pool = pool
+        await bot.start()
 
 
 @click.group(invoke_without_command=True, options_metavar="[options]")

@@ -9,7 +9,6 @@ import asyncpg
 from twitchio.ext import commands
 
 from cogs import EXTENSIONS
-from config import TWITCH_TOKEN
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -23,9 +22,9 @@ log = logging.getLogger(__name__)
 class LueByt(commands.Bot):
     pool: asyncpg.Pool
 
-    def __init__(self, initial_channels: List[str]):
+    def __init__(self, access_token: str, initial_channels: List[str]):
         self.prefixes = ["!", "?", "$"]
-        super().__init__(token=TWITCH_TOKEN, prefix=self.prefixes, initial_channels=initial_channels)
+        super().__init__(token=access_token, prefix=self.prefixes, initial_channels=initial_channels)
 
         self.repo = "https://github.com/Aluerie/LueByt"
 
@@ -60,8 +59,7 @@ class LueByt(commands.Bot):
             await ctx.send(f"Missing required argument(-s): {missing_arg}")
         else:
             command_name = getattr(ctx.command, "name", "unknown")
-            print(f"Ignoring exception in !{command_name} command: {error}:", file=sys.stderr)
-            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+            log.error(f"Ignoring exception in !{command_name} command: {error}:", exc_info=error)
 
     async def start(self):
         for ext in EXTENSIONS:

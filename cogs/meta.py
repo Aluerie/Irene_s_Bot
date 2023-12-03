@@ -27,7 +27,7 @@ class Meta(commands.Cog):
     async def ping(self, ctx: commands.Context):
         await ctx.send("\N{TABLE TENNIS PADDLE AND BALL} Pong!")
 
-    @commands.command()
+    @commands.command(aliases=['hi', 'yo'])
     async def hello(self, ctx: commands.Context):
         await ctx.send(f"Hello @{ctx.author.name} yo")
 
