@@ -82,7 +82,9 @@ async def bot_start():
     #     )
 
     query = "SELECT user_name FROM joined_streamers"
-    initial_channels: List[str] = [row for row, in await pool.fetch(query)]
+    initial_channels: List[str] = [str(row) for row, in await pool.fetch(query)]
+    # fok this^ database still has Aluerie :D i m lazy to fix.
+    initial_channels = ['Irene_Adler__'] # todo: fix it properly, so it uses twitch_id, if possible.
     # async with LueByt(access_token, initial_channels) as bot:
     bot = LueByt(access_token, initial_channels)
     bot.pool = pool
