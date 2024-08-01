@@ -7,19 +7,16 @@ import twitchio  # noqa: TCH002
 # import pkg_resources
 from twitchio.ext import commands
 
-from utils import checks
+from utils import IrenesCog, checks
 
 if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-class Meta(commands.Cog):
-    def __init__(self, bot: IrenesBot) -> None:
-        self.bot: IrenesBot = bot
-
+class Meta(IrenesCog):
     @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_ready(self) -> None:
-        await self.bot.irene_channel.send("hi the bot is reloaded.")
+        await self.irene_channel().send("hi the bot is reloaded.")
 
     @commands.command()
     async def ping(self, ctx: commands.Context) -> None:

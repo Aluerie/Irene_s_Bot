@@ -3,15 +3,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, override
 
-from discord.utils import cached_property
 from twitchio.ext import commands
 
 from ext import EXTENSIONS
-from utils import const
 
 if TYPE_CHECKING:
     import asyncpg
-    import twitchio
 
 
 log = logging.getLogger(__name__)
@@ -31,7 +28,7 @@ class IrenesBot(commands.Bot):
             List of channel names.
             Interestingly enough, at the moment, they don't straight accept channel ids.
         """
-        print(initial_channels)
+
         self.prefixes = ["!", "?", "$"]
         super().__init__(token=access_token, prefix=self.prefixes, initial_channels=initial_channels)
 
@@ -66,14 +63,3 @@ class IrenesBot(commands.Bot):
         for ext in EXTENSIONS:
             self.load_module(ext)
         await super().start()
-
-    @cached_property
-    def irene_channel(self) -> twitchio.Channel:
-        """Get Irene's channel from the cache"""
-        channel_name = const.IRENE_TWITCH_NAME
-        channel = self.get_channel(channel_name)
-        if channel:
-            return channel
-        else:
-            msg = f"Channel name={channel_name} not in cache"
-            raise RuntimeError(msg)
