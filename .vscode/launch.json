@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "LueByt",
-            "type": "python",
+            "name": "Irene_s_Bot",
+            "type": "debugpy",
             "request": "launch",
-            "program": "main.py",
+            "program": "__main__.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

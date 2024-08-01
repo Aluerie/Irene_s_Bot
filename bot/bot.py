@@ -1,47 +1,47 @@
 from __future__ import annotations
 
 import logging
-import sys
-import traceback
-from typing import TYPE_CHECKING, List, Optional, Type
+from typing import TYPE_CHECKING, override
 
-import asyncpg
+from discord.utils import cached_property
 from twitchio.ext import commands
 
-from cogs import EXTENSIONS
+from ext import EXTENSIONS
+from utils import const
 
 if TYPE_CHECKING:
-    from types import TracebackType
-
-    from typing_extensions import Self
+    import asyncpg
+    import twitchio
 
 
 log = logging.getLogger(__name__)
 
 
-class LueByt(commands.Bot):
+class IrenesBot(commands.Bot):
     pool: asyncpg.Pool
 
-    def __init__(self, access_token: str, initial_channels: List[str]):
+    def __init__(self, access_token: str, initial_channels: list[str]) -> None:
+        """Init
+
+        Parameters
+        ----------
+        access_token : str
+            _description_
+        initial_channels : list[str]
+            List of channel names.
+            Interestingly enough, at the moment, they don't straight accept channel ids.
+        """
+        print(initial_channels)
         self.prefixes = ["!", "?", "$"]
         super().__init__(token=access_token, prefix=self.prefixes, initial_channels=initial_channels)
 
-        self.repo = "https://github.com/Aluerie/LueByt"
+        self.repo = "https://github.com/Aluerie/Irene_s_Bot"
 
-    async def __aenter__(self) -> Self:
-        return self
+    @override
+    async def event_ready(self) -> None:
+        log.info("Irene_s_Bot is ready as %s (user_id = %s)", self.nick, self.user_id)
 
-    async def __aexit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        await self.close()
-
-    async def event_ready(self):
-        log.info(f"LueByt Ready as {self.nick} | user_id = {self.user_id}")
-
+    @override
     async def event_command_error(self, ctx: commands.Context, error: Exception) -> None:
         # print('---------------------')
         # print(error, type(error))
@@ -59,9 +59,21 @@ class LueByt(commands.Bot):
             await ctx.send(f"Missing required argument(-s): {missing_arg}")
         else:
             command_name = getattr(ctx.command, "name", "unknown")
-            log.error(f"Ignoring exception in !{command_name} command: {error}:", exc_info=error)
+            log.error("Ignoring exception in !%s command: %s:", command_name, error, exc_info=error)
 
-    async def start(self):
+    @override
+    async def start(self) -> None:
         for ext in EXTENSIONS:
             self.load_module(ext)
         await super().start()
+
+    @cached_property
+    def irene_channel(self) -> twitchio.Channel:
+        """Get Irene's channel from the cache"""
+        channel_name = const.IRENE_TWITCH_NAME
+        channel = self.get_channel(channel_name)
+        if channel:
+            return channel
+        else:
+            msg = f"Channel name={channel_name} not in cache"
+            raise RuntimeError(msg)

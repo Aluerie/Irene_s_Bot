@@ -9,16 +9,16 @@ from twitchio.ext import commands
 from utils import checks
 
 if TYPE_CHECKING:
-    from utils.bot import LueByt
+    from bot.bot import IrenesBot
 
 
 class Management(commands.Cog):
-    def __init__(self, bot: LueByt):
-        self.bot: LueByt = bot
+    def __init__(self, bot: IrenesBot) -> None:
+        self.bot: IrenesBot = bot
 
-    @checks.is_aluerie()
+    @checks.is_irene()
     @commands.command(aliases=["kill"])
-    async def maintenance(self, ctx: commands.Context):
+    async def maintenance(self, ctx: commands.Context) -> None:
         await ctx.send("Shutting down the bot in 3 2 1")
         await asyncio.sleep(3)
         try:
@@ -30,5 +30,5 @@ class Management(commands.Cog):
             await ctx.send("Something went wrong.")
 
 
-def prepare(bot: LueByt):
+def prepare(bot: IrenesBot) -> None:
     bot.add_cog(Management(bot))
