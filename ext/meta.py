@@ -7,7 +7,8 @@ import twitchio  # noqa: TCH002
 # import pkg_resources
 from twitchio.ext import commands
 
-from utils import IrenesCog, checks
+from bot import IrenesCog
+from utils import checks
 
 if TYPE_CHECKING:
     from bot import IrenesBot

@@ -4,5 +4,7 @@ twitchio[speed] @ git+https://github.com/TwitchIO/TwitchIO.git
 discord.py
 
 asyncpg
+asyncpg-stubs
+
 click
 uvloop; platform_system == 'Linux'  #ignore on windows because not available

@@ -4,6 +4,7 @@ import asyncio
 import logging
 import sys
 
+import aiohttp
 import click
 
 import config
@@ -38,9 +39,12 @@ async def start_the_bot() -> None:
     query = "SELECT user_name FROM joined_streamers"
     initial_channels: list[str] = [str(user_name) for (user_name,) in await pool.fetch(query)]
 
-    bot = IrenesBot(access_token, initial_channels)
-    bot.pool = pool
-    await bot.start()
+    async with (
+        aiohttp.ClientSession() as session,
+        pool as pool,
+        IrenesBot(access_token, initial_channels, session=session, pool=pool) as irenesbot,
+    ):
+        await irenesbot.start()
 
 
 @click.group(invoke_without_command=True, options_metavar="[options]")

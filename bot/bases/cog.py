@@ -1,9 +1,11 @@
+from typing import TYPE_CHECKING
+
 import twitchio
 from twitchio.ext import commands
 
-from bot import IrenesBot
+from utils import const
 
-from .. import const
+from ..bot import IrenesBot
 
 __all__ = ("IrenesCog",)
 
