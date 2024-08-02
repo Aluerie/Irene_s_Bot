@@ -28,7 +28,7 @@ def is_irene() -> Callable[[commands.Command], commands.Command]:
         if (await ctx.message.author.user()).id == IRENE_TWITCH_ID:
             return True
         else:
-            msg = "Only Aluerie can use this command"
+            msg = "Only Irene can use this command"
             raise commands.CheckFailure(msg)
 
     def decorator(func: commands.Command) -> commands.Command:

@@ -1,7 +1,4 @@
-from typing import TYPE_CHECKING
-
 import twitchio
-from discord.utils import cached_property
 from twitchio.ext import commands
 
 from bot import IrenesBot

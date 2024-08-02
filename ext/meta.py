@@ -39,6 +39,7 @@ class Meta(IrenesCog):
             VALUES ($1, $2)
         """
         await self.bot.pool.execute(query, (await channel.user()).id, channel.name)
+        await self.bot.join_channels([channel.name])
         await ctx.send(f"Added the channel {channel.name}.")
 
     @checks.is_irene()
@@ -49,6 +50,7 @@ class Meta(IrenesCog):
             WHERE user_id=$1
         """
         await self.bot.pool.execute(query, (await channel.user()).id)
+        await self.bot.part_channels([channel.name])
         await ctx.send(f"Deleted the channel {channel.name}")
 
 
