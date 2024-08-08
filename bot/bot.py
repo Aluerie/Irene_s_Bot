@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Self, override
+from typing import TYPE_CHECKING, Any, Self, override
 
 import discord
-from twitchio.ext import commands
+from twitchio.ext import commands, eventsub
 
+from core import CORE_EXTENSIONS
 from ext import EXTENSIONS
 
 from .exc_manager import ExceptionManager
 
 if TYPE_CHECKING:
-    from types import TracebackType
-
     import asyncpg
     from aiohttp import ClientSession
 
@@ -40,7 +39,7 @@ class IrenesBot(commands.Bot):
             _description_
         initial_channels : list[str]
             List of channel names.
-            Interestingly enough, at the moment, they don't straight accept channel ids.
+            Interestingly enough, they don't straight accept channel ids.
         """
 
         self.prefixes = ["!", "?", "$"]
@@ -49,23 +48,18 @@ class IrenesBot(commands.Bot):
         self.pool: PoolTypedWithAny = pool  # type: ignore # asyncpg typehinting crutch, read `utils.database` for more
         self.session: ClientSession = session
 
-        self.repo = "https://github.com/Aluerie/Irene_s_Bot"
+        self.eventsub: eventsub.EventSubWSClient = eventsub.EventSubWSClient(self)
 
         self.exc_manager = ExceptionManager(self)
+
+        self.repo = "https://github.com/Aluerie/Irene_s_Bot"
 
     async def __aenter__(self) -> Self:
         return self
 
     # todo: remove 3.0
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
-        if self._closing:
-            return
-        await self.close()
+    async def __aexit__(self, *_: Any) -> None:
+        return
 
     @override
     async def event_ready(self) -> None:
@@ -91,6 +85,8 @@ class IrenesBot(commands.Bot):
 
     @override
     async def start(self) -> None:
+        for ext in CORE_EXTENSIONS:
+            self.load_module(ext)
         for ext in EXTENSIONS:
             self.load_module(ext)
         await super().start()

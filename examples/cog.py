@@ -10,11 +10,11 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-class DotaStats(IrenesCog):
+class NewCog(IrenesCog):
     @commands.command()
-    async def mmr(self, ctx: commands.Context) -> None:
+    async def new_command(self, ctx: commands.Context) -> None:
         await ctx.send("Not implemented yet!")
 
 
 def prepare(bot: IrenesBot) -> None:
-    bot.add_cog(DotaStats(bot))
+    bot.add_cog(NewCog(bot))

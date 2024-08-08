@@ -4,7 +4,7 @@ venv/
 
 .vscode/*
 !.vscode/launch.json
-#!.vscode/settings.json
+!.vscode/settings.json
 
 .ipynb_checkpoints
 *.ipynb
@@ -14,3 +14,6 @@ venv/
 config.py
 
 .temp/
+
+ext/_beta.py
+ext/beta.py

@@ -6,16 +6,14 @@ from typing import TYPE_CHECKING
 
 from twitchio.ext import commands
 
+from bot import IrenesCog
 from utils import checks
 
 if TYPE_CHECKING:
-    from bot.bot import IrenesBot
+    from bot import IrenesBot
 
 
-class Management(commands.Cog):
-    def __init__(self, bot: IrenesBot) -> None:
-        self.bot: IrenesBot = bot
-
+class Management(IrenesCog):
     @checks.is_irene()
     @commands.command(aliases=["kill"])
     async def maintenance(self, ctx: commands.Context) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import platform
 from typing import TYPE_CHECKING
 
 import twitchio  # noqa: TCH002
@@ -8,7 +9,7 @@ import twitchio  # noqa: TCH002
 from twitchio.ext import commands
 
 from bot import IrenesCog
-from utils import checks
+from utils import checks, const
 
 if TYPE_CHECKING:
     from bot import IrenesBot
@@ -17,19 +18,9 @@ if TYPE_CHECKING:
 class Meta(IrenesCog):
     @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_ready(self) -> None:
-        await self.irene_channel().send("hi the bot is reloaded.")
-
-    @commands.command()
-    async def ping(self, ctx: commands.Context) -> None:
-        await ctx.send("\N{TABLE TENNIS PADDLE AND BALL} Pong!")
-
-    @commands.command(aliases=["hi", "yo"])
-    async def hello(self, ctx: commands.Context) -> None:
-        await ctx.send(f"Hello @{ctx.author.name} yo")
-
-    @commands.command()
-    async def source(self, ctx: commands.Context) -> None:
-        await ctx.send(f"{self.bot.repo} DankReading")
+        # await self.bot.join_channels(["Irene_Adler__"]) # not needed
+        if platform.system() != "Windows":
+            await self.irene_channel().send(f"{const.STV.hi} the bot is reloaded.")
 
     @checks.is_irene()
     @commands.command()

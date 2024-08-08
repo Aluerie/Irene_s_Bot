@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
+import platform
 import traceback
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -72,6 +73,10 @@ class ExceptionManager:
 
         It is not recommended to call this yourself, call `register_error` instead.
         """
+
+        if platform.system() == "Windows":
+            return
+
         code_chunks = list(self._yield_code_chunks(traceback))
 
         if mention:

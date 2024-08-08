@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from twitchio.ext import commands
 
-from utils.const import IRENE_TWITCH_ID
+from utils import const
 
 
 def is_mod() -> Callable[[commands.Command], commands.Command]:
@@ -25,7 +25,7 @@ def is_mod() -> Callable[[commands.Command], commands.Command]:
 
 def is_irene() -> Callable[[commands.Command], commands.Command]:
     async def pred(ctx: commands.Context) -> bool:
-        if (await ctx.message.author.user()).id == IRENE_TWITCH_ID:
+        if (await ctx.message.author.user()).id == const.ID.Irene:
             return True
         else:
             msg = "Only Irene can use this command"

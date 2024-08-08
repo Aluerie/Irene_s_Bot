@@ -7,7 +7,8 @@ import asyncpg
 import twitchio  # noqa: TCH002
 from twitchio.ext import commands, routines
 
-from utils.checks import is_mod
+from bot import IrenesCog
+from utils import checks
 
 if TYPE_CHECKING:
     from bot import IrenesBot
@@ -18,9 +19,9 @@ if TYPE_CHECKING:
         content: str
 
 
-class CustomCommands(commands.Cog):
+class CustomCommands(IrenesCog):
     def __init__(self, bot: IrenesBot) -> None:
-        self.bot: IrenesBot = bot
+        super().__init__(bot)
         self.command_cache: dict[int, dict[str, str]] = {}
         self.populate_cache.start()
 
@@ -52,7 +53,7 @@ class CustomCommands(commands.Cog):
     # todo: do it with @commands.group when they bring it back
     cmd = commands.Group(name="cmd", func=cmd_group)
 
-    @is_mod()
+    @checks.is_mod()
     @cmd.command()
     async def add(self, ctx: commands.Context, cmd_name: str, *, text: str) -> None:
         query = """
@@ -69,7 +70,7 @@ class CustomCommands(commands.Cog):
         self.command_cache.setdefault(user.id, {})[cmd_name] = text
         await ctx.send(f"Added the command {cmd_name}.")
 
-    @is_mod()
+    @checks.is_mod()
     @cmd.command(name="del")
     async def delete(self, ctx: commands.Context, command_name: str) -> None:
         query = """
@@ -85,7 +86,7 @@ class CustomCommands(commands.Cog):
         self.command_cache[user.id].pop(command_name)
         await ctx.send(f"Deleted the command {command_name}")
 
-    @is_mod()
+    @checks.is_mod()
     @cmd.command()
     async def edit(self, ctx: commands.Context, command_name: str, *, text: str) -> None:
         query = """
