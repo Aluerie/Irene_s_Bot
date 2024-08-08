@@ -17,7 +17,7 @@ class IrenesCog(commands.Cog):
     # @property
     def irene_channel(self) -> twitchio.Channel:
         """Get Irene's channel from the cache"""
-        channel_name = const.IRENE_TWITCH_NAME
+        channel_name = const.Name.Irene
         channel = self.bot.get_channel(channel_name)
         if channel:
             return channel
