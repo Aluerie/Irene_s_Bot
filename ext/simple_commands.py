@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import datetime
+import random
 from typing import TYPE_CHECKING
 
 import twitchio  # noqa: TCH002
@@ -55,6 +57,11 @@ class DefaultCommands(IrenesCog):
         # now = datetime.datetime.now(datetime.UTC)
         #  new_clips = await streamer.fetch_clips(started_at=now)
 
+    @commands.command(name="commands", aliases=["help"])
+    async def command_list(self, ctx: commands.Context) -> None:
+        """Commands"""
+        await ctx.send('Not implemented yet, for now use "!cmd list"')
+
     @commands.command()
     async def discord(self, ctx: commands.Context) -> None:
         """Discord"""
@@ -76,6 +83,39 @@ class DefaultCommands(IrenesCog):
         await ctx.send(f"{const.STV.Hello} @{ctx.author.name} {const.STV.yo}")
 
     @commands.command()
+    async def love(self, ctx: commands.Context, arg: str) -> None:
+        """Love"""
+        author_mention = ctx.author.mention  # type: ignore
+        # check if it's a chatter
+        chatter = ctx.channel.get_chatter(arg.lstrip("@"))
+        if not chatter:
+            love = random.randint(0, 100)
+            await ctx.send(f"{love} between {author_mention} and {arg}")
+            return
+
+        if chatter.channel.name.lower() in const.Bots:
+            await ctx.send("Silly organic, bots cannot know love BibleThump")
+        elif chatter.channel.id == ctx.author.id:  # type: ignore
+            await ctx.send("pls")
+        elif chatter.channel.id == const.ID.Irene:
+            await ctx.send("The love @ has for our beloved Irene transcends all")
+        else:
+            love = random.randint(0, 100)
+            await ctx.send(f"{love}% love between {author_mention} and {chatter.channel.display_name}")
+
+    @commands.command(aliases=["lorem", "ipsum"])
+    async def loremipsum(self, ctx: commands.Context) -> None:
+        """Lorem ipsum"""
+        await ctx.send(  # cSpell:disable
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. "
+            "Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. "
+            "Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. "
+            "Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, "
+            "per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor. "
+            "Pellentesque nibh."
+        )  # cSpell:enable
+
+    @commands.command()
     async def lurk(self, ctx: commands.Context) -> None:
         """Lurk"""
         try:
@@ -84,10 +124,73 @@ class DefaultCommands(IrenesCog):
             mention = f"@{ctx.author.name}"
         await ctx.send(f"{mention} is now lurking {const.STV.DankLurk} Have fun {const.STV.donkHappy}")
 
+    @commands.command(name="decide", aliases=["ball", "8ball", "answer", "question", "yesno"])
+    async def magic_ball(self, ctx: commands.Context, *, text: str | None = None) -> None:
+        """Magic Ball"""
+        if not text:
+            await ctx.send(f"Wrong command usage! You need to ask the bot yes/no question with it {const.FFZ.peepoWTF}")
+            return
+
+        options = [
+            "69% for sure",
+            "Are you kidding?!",
+            "Ask again",
+            "Better not tell you now",
+            "Definitely... not",
+            "Don't bet on it",
+            "don't count on it",
+            "Doubtful",
+            "For sure",
+            "Forget about it",
+            "Hah!",
+            "Hells no.",
+            "If the Twitch gods grant it",
+            "Impossible!In due time",
+            "Indubitably!",
+            "It is certain",
+            "It is so",
+            "Leaning towards no",
+            "Look deep in your heart and you will see the answer",
+            "Most definitely",
+            "Most likely",
+            "My sources say yes",
+            "Never",
+            "No wais",
+            "No way!",
+            "No.",
+            "Of course!",
+            "Outlook good",
+            "Outlook not so good",
+            "Perhaps",
+            "Possibly",
+            "Please.",
+            "That's a tough one",
+            "That's like totally a yes. Duh!",
+            "The answer might not be not no",
+            "The answer to that isn't pretty",
+            "The heavens point to yes",
+            "Who knows?",
+            "Without a doubt",
+            "Yesterday it would've been a yes, but today it's a yep",
+            "You will have to wait",
+        ]
+        await ctx.send(random.choice(options))
+
     @commands.command()
     async def nomic(self, ctx: commands.Context) -> None:
         """No mic"""
         await ctx.send("Please read info below the stream, specifically, FAQ")
+
+    @commands.command()
+    async def oversight(self, ctx: commands.Context) -> None:
+        """Oversight"""
+        await ctx.send(
+            "The biggest🙌💯oversight🔭🔍with Dark✊🏾Willow🌳is that she's unbelievably sexy🤤💦🍆. "
+            "I can't go on a hour🕐of my day🌞without thinking💭💦about plowing👉👌🚜that tight😳wooden🌳ass💦🍑. "
+            "I'd kill🔫😱a man👨 in cold❄️blood😈just to spend💷a minute⏱️with her crotch🍑😫grinding against "
+            "my throbbing💦🍆💦manhood💦🍆💦as she whispers🙊😫terribly dirty💩💩things to me in her "
+            "geographically🌍🌎ambiguous🌏🗺️accent 🇮🇪"
+        )
 
     @commands.command()
     async def ping(self, ctx: commands.Context) -> None:
@@ -99,12 +202,40 @@ class DefaultCommands(IrenesCog):
         """Get a link to Spotify playlist"""
         await ctx.send("open.spotify.com/playlist/7fVAcuDPLVAUL8555vy8Kz?si=b26cecab2cf24608")  # cSpell: ignore DPLVAUL
 
+    @commands.cooldown(rate=1, per=60, bucket=commands.Bucket.channel)
+    @commands.command(aliases=["rr", "russianroulette"])
+    async def roulette(self, ctx: commands.Context) -> None:
+        """Russian roulette"""
+        mention: str = ctx.author.mention  # type: ignore
+        user_id: int = ctx.author.id  # type: ignore # in reality it's str and timeout accepts it just fine
+
+        for phrase in [
+            f"/me places the revolver to {mention}'s head {const.FFZ.monkaGIGAGUN}",
+            f"{const.DIGITS[3]} {const.Global.monkaS} ... ",
+            f"{const.DIGITS[2]} {const.FFZ.monkaH} ... ",
+            f"{const.DIGITS[1]} {const.FFZ.monkaGIGA} ... The trigger is pulled... ",
+        ]:
+            await ctx.send(phrase)
+            await asyncio.sleep(0.77)
+
+        if ctx.author.is_mod:  # type: ignore
+            # Special case: we will not kill any moderators
+            await ctx.send(f"Revolver malfunctions! {mention} is miraculously alive! {const.STV.PogChampPepe}")
+        elif random.randint(0, 1):
+            await ctx.send(f"Revolver clicks! {mention} has lived to survive roulette! {const.STV.POGCRAZY}")
+        else:
+            await ctx.send(f"Revolver fires! {mention} lies dead in chat {const.STV.Deadge}")
+            streamer = await ctx.channel.user()
+            await streamer.timeout_user(config.TTG_ACCESS_TOKEN, const.ID.Bot, user_id, 30, "Lost in !russianroulette")
+
     @checks.is_mod()
     @commands.command(aliases=["so"])
-    async def shoutout(self, ctx: commands.Context, user: twitchio.User) -> None:
+    async def shoutout(self, ctx: commands.Context, user: twitchio.PartialChatter) -> None:
         """Shoutout"""
         streamer = await ctx.channel.user()
-        await streamer.shoutout(config.TTG_IRENE_ACCESS_TOKEN, user.id, const.ID.Irene)
+        await streamer.shoutout(
+            config.TTG_IRENE_ACCESS_TOKEN, user.channel.id, const.ID.Irene
+        )  # todo: 3.0 hopefully user.id will work
 
     @commands.command()
     async def song(self, ctx: commands.Context) -> None:
@@ -134,6 +265,21 @@ class DefaultCommands(IrenesCog):
         else:
             uptime = datetime.datetime.now(datetime.UTC) - stream.started_at
             await ctx.send(f"{formats.seconds_to_words(uptime)} {const.STV.peepoDapper}")
+
+    @commands.command(aliases=["seppuku"])
+    async def vanish(self, ctx: commands.Context) -> None:
+        """Vanish"""
+        if ctx.author.is_mod:  # type: ignore
+            if "seppuku" in ctx.message.content:  # type: ignore
+                await ctx.send(
+                    f"Emperor Kappa does not allow you this honor, {ctx.author.mention} (bcs you're a moderator)"  # type: ignore
+                )
+            else:
+                await ctx.send("Moderators can't vanish")
+        else:
+            user_id: int = ctx.author.id  # type: ignore # in reality it's str and timeout accepts it just fine
+            streamer = await ctx.channel.user()
+            await streamer.timeout_user(config.TTG_ACCESS_TOKEN, const.ID.Bot, user_id, 1, "Used vanish")
 
     @commands.command()
     async def vods(self, ctx: commands.Context) -> None:

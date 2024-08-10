@@ -67,21 +67,24 @@ class IrenesBot(commands.Bot):
 
     @override
     async def event_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        if isinstance(error, commands.BadArgument):
-            await ctx.send(f"{error}")
-        if isinstance(error, commands.CheckFailure):
-            await ctx.send(f"{error}")
-        elif isinstance(error, commands.CommandNotFound):
-            #  otherwise we just spam console with commands from other bots and from my event thing
-            pass
-        elif isinstance(error, commands.MissingRequiredArgument):
-            missing_arg = ", ".join([f"{x.name}" for x in error.args])
-            await ctx.send(f"Missing required argument(-s): {missing_arg}")
-        else:
-            command_name = getattr(ctx.command, "name", "unknown")
+        match error:
+            case commands.BadArgument() | commands.CheckFailure():
+                await ctx.send(f"{error}")
+            case commands.CommandOnCooldown():
+                await ctx.send(
+                    f"Command {ctx.prefix}{error.command.name} is on cooldown! Try again in {error.retry_after:.0f} sec."
+                )
+            case commands.CommandNotFound():
+                #  otherwise we just spam console with commands from other bots and from my event thing
+                pass
+            case commands.MissingRequiredArgument():
+                missing_arg = ", ".join([f"{x.name}" for x in error.args])
+                await ctx.send(f"Missing required argument(-s): {missing_arg}")
+            case _:
+                command_name = getattr(ctx.command, "name", "unknown")
 
-            embed = discord.Embed(description=f"Exception in !{command_name} command: {command_name}:")
-            await self.exc_manager.register_error(error, embed=embed)
+                embed = discord.Embed(description=f"Exception in !{command_name} command: {command_name}:")
+                await self.exc_manager.register_error(error, embed=embed)
 
     @override
     async def start(self) -> None:

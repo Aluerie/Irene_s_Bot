@@ -8,3 +8,6 @@ asyncpg-stubs
 
 click
 uvloop; platform_system == 'Linux'  #ignore on windows because not available
+
+# Jupyter Notebooks (I like to mess with those on home PC)
+ipykernel; platform_system == 'Windows'
