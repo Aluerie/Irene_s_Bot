@@ -39,6 +39,13 @@ class Counters(IrenesCog):
                 value: int = await self.bot.pool.fetchval(query, "erm")
                 await self.irene_channel().send(f"{value} Erm in chat.")
 
+    @commands.command()
+    async def erms(self, ctx: commands.Context) -> None:
+        """Get an erm_counter value"""
+        query = "SELECT value FROM counters WHERE name = $1"
+        value: int = await self.bot.pool.fetchval(query, "erm")
+        await ctx.send(f"{value} Erm in chat.")
+
 
 def prepare(bot: IrenesBot) -> None:
     bot.add_cog(Counters(bot))
