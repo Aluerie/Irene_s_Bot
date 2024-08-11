@@ -33,6 +33,8 @@ class EventSubSubscriptions(IrenesCog):
 
         # Ad break begin                        channel:read:ads
         # await self.bot.eventsub.subscribe_channel_ad_break_begin(broadcaster, token)
+        # Bans                                  channel:moderate
+        await self.bot.eventsub.subscribe_channel_bans(broadcaster, token)
         # Follows                               moderator:read:followers
         await self.bot.eventsub.subscribe_channel_follows_v2(broadcaster, broadcaster, token)
         # Goal End                              channel:read:goals

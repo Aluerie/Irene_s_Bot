@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import random
 from typing import TYPE_CHECKING
 
@@ -21,6 +22,10 @@ class Alerts(IrenesCog):
     # and we wont need this ugly first line
     # "payload: eventsub.CustomRewardRedemptionAddUpdateData = event.data  # type: ignore"
     # fix it everywhere
+
+    def __init__(self, bot: IrenesBot) -> None:
+        super().__init__(bot)
+        self.ban_list: set[str] = set()
 
     # SECTION 1.
     # Channel Points beta test event (because it's the easiest event to test out)
@@ -137,6 +142,22 @@ class Alerts(IrenesCog):
         channel = self.get_channel(payload.broadcaster)
         word = "automatic" if payload.is_automatic else "manual"
         await channel.send(f"{payload.duration} secs {word} ad break is starting.")
+
+    @commands.Cog.event(event="event_eventsub_notification_ban")  # type: ignore # lib issue
+    async def bans_timeouts(self, event: eventsub.NotificationEvent) -> None:
+        """Bans."""
+        payload: eventsub.ChannelBanData = event.data  # type: ignore
+        assert payload.user.name
+        self.ban_list.add(payload.user.name)
+
+    @commands.Cog.event(event="event_message")  # type: ignore # lib issue
+    async def first_message(self, message: twitchio.Message) -> None:
+        if not message.first or message.echo or not message.content:
+            return
+
+        await asyncio.sleep(2.4)
+        if message.author.name not in self.ban_list:
+            await message.channel.send(const.STV.FirstTimeChadder)
 
 
 # f"{payload.duration} sec ad break is starting.

@@ -28,7 +28,7 @@ class Counters(IrenesCog):
         if message.echo or not message.content or message.author.name in const.Bots:
             return
 
-        if re.search(r"\b" + re.escape("Erm") + r"\b", message.content):
+        if re.search(r"\bErm\b", message.content):
             query = "UPDATE counters SET value = value + 1 where name = $1"
             value: int = await self.bot.pool.fetchval(query, "erm")
 

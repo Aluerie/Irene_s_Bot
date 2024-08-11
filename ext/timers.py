@@ -61,8 +61,9 @@ class Timers(IrenesCog):
 
         self.lines_count += 1
 
-    @irenes_routine(minutes=103, wait_first=True)
+    @irenes_routine(iterations=1)
     async def timer_task(self) -> None:
+        await asyncio.sleep(10 * 60)
         messages = self.messages.copy()
         random.shuffle(messages)
 

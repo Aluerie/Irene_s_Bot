@@ -53,6 +53,7 @@ class STV(StrEnum):
     DonkPrime = "DonkPrime"
     Erm = "Erm"
     FeelsBingMan = "FeelsBingMan"
+    FirstTimeChadder = "FirstTimeChadder"
     GroupScoots = "GroupScoots"
     Hello = "Hello"
     Hey = "Hey"
@@ -68,7 +69,7 @@ class STV(StrEnum):
     POGCRAZY = "POGCRAZY"
     yo = "yo"
     uuh = "uuh"
-    widepeepoHappyRightHeart = "widepeepoHappyRightHeart "
+    widepeepoHappyRightHeart = "widepeepoHappyRightHeart"
 
 
 class Bots(StrEnum):
