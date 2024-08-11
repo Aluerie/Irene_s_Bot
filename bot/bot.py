@@ -68,7 +68,10 @@ class IrenesBot(commands.Bot):
     @override
     async def event_command_error(self, ctx: commands.Context, error: Exception) -> None:
         match error:
-            case commands.BadArgument() | commands.CheckFailure():
+            case commands.BadArgument():
+                log.warning(error.message)
+                await ctx.send(f"Couldn't find any {error.name} like that")
+            case commands.ArgumentParsingFailed() | commands.CheckFailure():
                 await ctx.send(f"{error}")
             case commands.CommandOnCooldown():
                 await ctx.send(
@@ -78,13 +81,17 @@ class IrenesBot(commands.Bot):
                 #  otherwise we just spam console with commands from other bots and from my event thing
                 pass
             case commands.MissingRequiredArgument():
-                missing_arg = ", ".join([f"{x.name}" for x in error.args])
-                await ctx.send(f"Missing required argument(-s): {missing_arg}")
+                await ctx.send(f"Missing required argument(-s): {error.name}")
             case _:
                 command_name = getattr(ctx.command, "name", "unknown")
 
-                embed = discord.Embed(description=f"Exception in !{command_name} command: {command_name}:")
+                embed = discord.Embed(description=f"Exception {error} in !{command_name} command: {command_name}:")
                 await self.exc_manager.register_error(error, embed=embed)
+
+    @override
+    async def event_error(self, error: Exception, data: str | None = None) -> None:
+        embed = discord.Embed(description=f"Exception {error.__class__.__name__} in event: {data}")
+        await self.exc_manager.register_error(error, embed=embed)
 
     @override
     async def start(self) -> None:

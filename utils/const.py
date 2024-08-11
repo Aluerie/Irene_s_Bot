@@ -36,6 +36,8 @@ class STV(StrEnum):
     Adge = "Adge"
     Cinema = "Cinema"
     DankApprove = "DankApprove"
+    dankHey = "dankHey"
+    DankL = "DankL"
     DankMods = "DankMods"
     DankDolmes = "DankDolmes"
     DankLurk = "DankLurk"
@@ -45,22 +47,43 @@ class STV(StrEnum):
     Discord = "Discord"
     donkDetective = "donkDetective"
     donkHappy = "donkHappy"
+    donkHey = "donkHey"
     donkJam = "donkJam"
+    donkSad = "donkSad"
     DonkPrime = "DonkPrime"
     Erm = "Erm"
     FeelsBingMan = "FeelsBingMan"
     GroupScoots = "GroupScoots"
     Hello = "Hello"
+    Hey = "Hey"
     heyinoticedyouhaveaprimegamingbadgenexttoyourname = "heyinoticedyouhaveaprimegamingbadgenexttoyourname"
     hi = "hi"
     How2Read = "How2Read"
     Offline = "Offline"
+    sadKEK = "sadKEK"
     peepoDapper = "peepoDapper"
+    peepoHey = "peepoHey"
     peepoPolice = "peepoPolice"
     PogChampPepe = "PogChampPepe"
     POGCRAZY = "POGCRAZY"
     yo = "yo"
     uuh = "uuh"
+    widepeepoHappyRightHeart = "widepeepoHappyRightHeart "
+
+
+class Bots(StrEnum):
+    nine_kmmrbot = "9kmmrbot"
+    dotabod = "dotabod"
+    Fossabot = "fossabot"
+    Irene_s_Bot = "irene_s_bot"
+    LolRankBot = "lolrankbot"
+    Moobot = "moobot"
+    Nightbot = "nightbot"
+    Sery_Bot = "Sery_Bot"
+    StreamLabs = "streamlabs"
+    Streamelements = "streamelements"
+    Supibot = "supibot"
+    WizeBot = "wizeBot"
 
 
 DIGITS = [
@@ -75,20 +98,3 @@ DIGITS = [
     "\N{DIGIT EIGHT}\N{COMBINING ENCLOSING KEYCAP}",
     "\N{DIGIT NINE}\N{COMBINING ENCLOSING KEYCAP}",
 ]
-
-
-# fmt: off
-class Bots(StrEnum):
-    nine_kmmrbot   = "9kmmrbot"
-    dotabod        = "dotabod"
-    Fossabot       = "fossabot"
-    Irene_s_Bot    = "irene_s_bot"
-    LolRankBot     = "lolrankbot"
-    Moobot         = "moobot"
-    Nightbot       = "nightbot"
-    Sery_Bot       = "Sery_Bot"
-    StreamLabs     = "streamlabs"
-    Streamelements = "streamelements"
-    Supibot        = "supibot"
-    WizeBot        = "wizeBot"
-# fmt: on

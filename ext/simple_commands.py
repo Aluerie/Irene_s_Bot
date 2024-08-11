@@ -83,25 +83,46 @@ class DefaultCommands(IrenesCog):
         await ctx.send(f"{const.STV.Hello} @{ctx.author.name} {const.STV.yo}")
 
     @commands.command()
-    async def love(self, ctx: commands.Context, arg: str) -> None:
+    async def love(self, ctx: commands.Context, *, arg: str) -> None:
         """Love"""
-        author_mention = ctx.author.mention  # type: ignore
-        # check if it's a chatter
-        chatter = ctx.channel.get_chatter(arg.lstrip("@"))
-        if not chatter:
+
+        def choose_love_emote() -> tuple[int, str]:
             love = random.randint(0, 100)
-            await ctx.send(f"{love} between {author_mention} and {arg}")
+            if love < 10:
+                emote = const.STV.donkSad
+            if love < 33:
+                emote = const.STV.sadKEK
+            elif love < 66:
+                emote = const.STV.donkHappy
+            elif love < 88:
+                emote = const.STV.widepeepoHappyRightHeart
+            else:
+                emote = const.STV.DankL
+            return love, emote
+
+        author_mention = ctx.author.mention  # type: ignore
+        chatter = ctx.channel.get_chatter(arg.lstrip("@"))
+
+        if not chatter:
+            # NOT USER, just object case
+            love, emote = choose_love_emote()
+            await ctx.send(f"{love}% love between {author_mention} & {arg} {emote}")
             return
 
-        if chatter.channel.name.lower() in const.Bots:
+        chatter_display_name = getattr(chatter, "display_name")
+        if not chatter_display_name:
+            chatter = await chatter.user()
+            chatter_display_name = chatter.display_name
+
+        if chatter_display_name.lower() in const.Bots:
             await ctx.send("Silly organic, bots cannot know love BibleThump")
-        elif chatter.channel.id == ctx.author.id:  # type: ignore
+        elif chatter.name == ctx.author.name:
             await ctx.send("pls")
-        elif chatter.channel.id == const.ID.Irene:
-            await ctx.send("The love @ has for our beloved Irene transcends all")
+        elif chatter.name == const.Name.Irene:
+            await ctx.send(f"The {author_mention}'s love for our beloved Irene transcends all")
         else:
-            love = random.randint(0, 100)
-            await ctx.send(f"{love}% love between {author_mention} and {chatter.channel.display_name}")
+            love, emote = choose_love_emote()
+            await ctx.send(f"{love}% love between {author_mention} and @{chatter_display_name} {emote}")
 
     @commands.command(aliases=["lorem", "ipsum"])
     async def loremipsum(self, ctx: commands.Context) -> None:
@@ -230,19 +251,16 @@ class DefaultCommands(IrenesCog):
 
     @checks.is_mod()
     @commands.command(aliases=["so"])
-    async def shoutout(self, ctx: commands.Context, user: twitchio.PartialChatter) -> None:
+    async def shoutout(self, ctx: commands.Context, user: twitchio.User) -> None:
         """Shoutout"""
         streamer = await ctx.channel.user()
-        await streamer.shoutout(
-            config.TTG_IRENE_ACCESS_TOKEN, user.channel.id, const.ID.Irene
-        )  # todo: 3.0 hopefully user.id will work
+        await streamer.shoutout(config.TTG_IRENE_ACCESS_TOKEN, user.id, const.ID.Irene)
 
     @commands.command()
     async def song(self, ctx: commands.Context) -> None:
         """Get currently played song on Spotify"""
-        async with self.bot.session.get(
-            f"https://spotify.aidenwallis.co.uk/u/{config.SPOTIFY_AIDENWALLIS_CODE}"
-        ) as resp:
+        url = f"https://spotify.aidenwallis.co.uk/u/{config.SPOTIFY_AIDENWALLIS_CODE}"
+        async with self.bot.session.get(url) as resp:
             msg = await resp.text()
 
         if msg == "User is currently not playing any music on Spotify.":
@@ -259,7 +277,8 @@ class DefaultCommands(IrenesCog):
     @commands.command()
     async def uptime(self, ctx: commands.Context) -> None:
         """Get stream uptime"""
-        stream = next(iter(await self.bot.fetch_streams(user_ids=[const.ID.Irene])), None)  # None if offline
+        streamer = await ctx.channel.user()
+        stream = next(iter(await self.bot.fetch_streams(user_ids=[streamer.id])), None)  # None if offline
         if stream is None:
             await ctx.send(f"The stream is offline {const.STV.Offline}")
         else:
@@ -271,11 +290,10 @@ class DefaultCommands(IrenesCog):
         """Vanish"""
         if ctx.author.is_mod:  # type: ignore
             if "seppuku" in ctx.message.content:  # type: ignore
-                await ctx.send(
-                    f"Emperor Kappa does not allow you this honor, {ctx.author.mention} (bcs you're a moderator)"  # type: ignore
-                )
+                msg = f"Emperor Kappa does not allow you this honor, {ctx.author.mention} (bcs you're a moderator)"  # type: ignore
             else:
-                await ctx.send("Moderators can't vanish")
+                msg = "Moderators can't vanish"
+            await ctx.send(msg)
         else:
             user_id: int = ctx.author.id  # type: ignore # in reality it's str and timeout accepts it just fine
             streamer = await ctx.channel.user()

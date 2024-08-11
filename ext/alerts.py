@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from typing import TYPE_CHECKING
 
 from twitchio.ext import commands, eventsub
@@ -58,7 +59,25 @@ class Alerts(IrenesCog):
         payload: eventsub.ChannelFollowData = event.data  # type: ignore
         channel = self.get_channel(payload.broadcaster)
         display_name = await self.get_display_name(payload.user, channel)
-        await channel.send(f"@{display_name} just followed")
+        random_phrase = random.choice(
+            [
+                "welcome in",
+                "I appreciate it",
+                "enjoy your stay",
+                "nice to see you",
+                "enjoy the show",
+            ]
+        )
+        emotes: list[str] = [
+            const.STV.donkHappy,
+            const.BTTV.PogU,
+            const.STV.dankHey,
+            const.STV.donkHey,
+            const.STV.peepoHey,
+            const.STV.Hey,
+        ]
+        random_emote = random.choice(emotes)
+        await channel.send(f"@{display_name} just followed! Thanks, {random_phrase} {random_emote}")
 
     @commands.Cog.event(event="event_eventsub_notification_channel_goal_end")  # type: ignore # lib issue
     async def goal_end(self, event: eventsub.NotificationEvent) -> None:

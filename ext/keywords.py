@@ -40,7 +40,7 @@ class Keywords(IrenesCog):
         ]
 
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
-    async def event_message(self, message: twitchio.Message) -> None:
+    async def keywords_response(self, message: twitchio.Message) -> None:
         if message.echo or not message.content:
             return
 

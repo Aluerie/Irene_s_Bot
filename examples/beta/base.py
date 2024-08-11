@@ -5,6 +5,7 @@ import platform
 from typing import TYPE_CHECKING
 
 import aiohttp
+import twitchio
 from twitchio.ext import commands, routines
 
 import config

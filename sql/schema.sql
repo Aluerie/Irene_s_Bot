@@ -14,3 +14,8 @@ CREATE TABLE IF NOT EXISTS chat_commands (
         FOREIGN KEY (streamer_id)
             REFERENCES joined_streamers(user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS counters (
+    name TEXT NOT NULL PRIMARY KEY,
+    value BIGINT DEFAULT (0)
+);
