@@ -91,7 +91,7 @@ class DefaultCommands(IrenesCog):
             if love < 10:
                 emote = const.STV.donkSad
             if love < 33:
-                emote = const.STV.sadKEK
+                emote = const.FFZ.sadKEK
             elif love < 66:
                 emote = const.STV.donkHappy
             elif love < 88:

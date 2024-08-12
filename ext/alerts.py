@@ -78,7 +78,7 @@ class Alerts(IrenesCog):
             const.BTTV.PogU,
             const.STV.dankHey,
             const.STV.donkHey,
-            const.STV.peepoHey,
+            const.BTTV.peepoHey,
             const.STV.Hey,
         ]
         random_emote = random.choice(emotes)

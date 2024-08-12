@@ -20,8 +20,10 @@ class Global(StrEnum):
 
 
 class BTTV(StrEnum):
+    peepoHey = "peepoHey"
     PogU = "PogU"
     Smoge = "Smoge"
+    weirdChamp = "weirdChamp"
 
 
 class FFZ(StrEnum):
@@ -29,7 +31,9 @@ class FFZ(StrEnum):
     monkaGIGA = "monkaGIGA"
     monkaGIGAGUN = "monkaGIGAGUN"
     monkaH = "monkaH"
+    peepoPolice = "peepoPolice"
     peepoWTF = "peepoWTF"
+    sadKEK = "sadKEK"
 
 
 class STV(StrEnum):
@@ -61,10 +65,8 @@ class STV(StrEnum):
     hi = "hi"
     How2Read = "How2Read"
     Offline = "Offline"
-    sadKEK = "sadKEK"
     peepoDapper = "peepoDapper"
-    peepoHey = "peepoHey"
-    peepoPolice = "peepoPolice"
+    Plink = "Plink"
     PogChampPepe = "PogChampPepe"
     POGCRAZY = "POGCRAZY"
     yo = "yo"

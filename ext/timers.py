@@ -22,13 +22,16 @@ class Timers(IrenesCog):
         self.stream_online: bool = False
 
         self.messages: list[str] = [
-            f"FIX YOUR POSTURE {const.FFZ.Weirdge}",
+            f"FIX YOUR POSTURE {const.BTTV.weirdChamp}",
             (
                 f"{const.STV.heyinoticedyouhaveaprimegamingbadgenexttoyourname} Use your Twitch Prime to sub for "
                 f"my channel {const.STV.DonkPrime} it's completely free {const.BTTV.PogU}"
             ),
             f"{const.STV.Adge} {const.STV.DankApprove}",
             f"Don't forget to stretch and scoot {const.STV.GroupScoots}",
+            f"{const.STV.Plink}",
+            f"{const.STV.uuh}"
+            ""
             # "Discord discord.gg/K8FuDeP",
             # "if you have nothing to do Sadge you can try !randompasta. Maybe you'll like it Okayge",
         ]
@@ -74,8 +77,8 @@ class Timers(IrenesCog):
 
             self.lines_count = 0
             await irene_channel.send(text)
-            time_to_sleep = 60 * (60 + random.randint(1, 20))
-            await asyncio.sleep(time_to_sleep)
+            minutes_to_sleep = 48 + random.randint(1, 11)
+            await asyncio.sleep(minutes_to_sleep * 60)
 
 
 def prepare(bot: IrenesBot) -> None:

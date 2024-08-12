@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import random
 import re
 from typing import TYPE_CHECKING, TypedDict
 
@@ -41,13 +42,13 @@ class Keywords(IrenesCog):
 
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
     async def keywords_response(self, message: twitchio.Message) -> None:
-        if message.echo or not message.content:
+        if message.echo or not message.content or random.randint(1, 100) > 5:
             return
 
         now = datetime.datetime.now(datetime.UTC)
         for keyword in self.keywords:
             for word in keyword["aliases"]:
-                if re.search(r"\b" + re.escape(word) + r"\b", message.content) and (now - keyword["dt"]).seconds > 120:
+                if re.search(r"\b" + re.escape(word) + r"\b", message.content) and (now - keyword["dt"]).seconds > 600:
                     await message.channel.send(keyword["response"])
                     keyword["dt"] = now
 

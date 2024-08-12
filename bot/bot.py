@@ -72,7 +72,7 @@ class IrenesBot(commands.Bot):
                 log.warning(error.message)
                 await ctx.send(f"Couldn't find any {error.name} like that")
             case commands.ArgumentParsingFailed() | commands.CheckFailure():
-                await ctx.send(f"{error}")
+                await ctx.send(str(error))
             case commands.CommandOnCooldown():
                 await ctx.send(
                     f"Command {ctx.prefix}{error.command.name} is on cooldown! Try again in {error.retry_after:.0f} sec."

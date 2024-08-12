@@ -51,7 +51,7 @@ class ChannelManagement(IrenesCog):
         # Set the game to it
         if not ctx.author.is_mod:  # type: ignore # the dev said it's fine
             # a. non-mod case
-            await ctx.send(f"Only moderators are allowed to change game name {const.STV.peepoPolice}")
+            await ctx.send(f"Only moderators are allowed to change game name {const.FFZ.peepoPolice}")
             return
 
         if game_name.lower() == "clear":
@@ -92,7 +92,7 @@ class ChannelManagement(IrenesCog):
         # Set the title to it
         if not ctx.author.is_mod:  # type: ignore # the dev said it's fine
             # a. non-mod case
-            await ctx.send(f"Only moderators are allowed to change title {const.STV.peepoPolice}")
+            await ctx.send(f"Only moderators are allowed to change title {const.FFZ.peepoPolice}")
             return
 
         self.title_updated_dt = datetime.datetime.now(datetime.UTC)
