@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import random
 from typing import TYPE_CHECKING
 
@@ -14,6 +15,8 @@ if TYPE_CHECKING:
     import twitchio
 
     from bot import IrenesBot
+
+log = logging.getLogger("alerts")
 
 
 class Alerts(IrenesCog):
@@ -46,14 +49,23 @@ class Alerts(IrenesCog):
         return channel
 
     async def get_display_name(self, partial_user: twitchio.PartialUser | None, channel: twitchio.Channel) -> str:
-        if partial_user and partial_user.name:  # todo: v3 type check | can payload.user.name be None?
+        """Get partial user display name
+
+        For some reason it's not that easy!
+        """
+        if partial_user is None:
+            return "Anonymous"
+
+        log.info(partial_user)
+        if partial_user.name is not None:  # todo: v3 type check | can payload.user.name be None?
             chatter = channel.get_chatter(partial_user.name)
-            display_name: str | None = getattr(chatter, "mention", None)
-            if not display_name:
-                display_name = (await partial_user.fetch()).display_name
-        else:
-            display_name = "Anonymous"
-        return display_name
+            display_name: str | None = getattr(chatter, "display_name", None)
+            log.info(display_name)
+            if display_name is not None:
+                return display_name
+
+        user = await partial_user.fetch()
+        return user.display_name
 
     # SECTION 3
     # Actual events
@@ -63,6 +75,7 @@ class Alerts(IrenesCog):
         """Somebody cheered."""
         payload: eventsub.ChannelFollowData = event.data  # type: ignore
         channel = self.get_channel(payload.broadcaster)
+
         display_name = await self.get_display_name(payload.user, channel)
         random_phrase = random.choice(
             [
@@ -112,7 +125,7 @@ class Alerts(IrenesCog):
             const.ID.Bot,
             (
                 f"@{raider_display_name} just raided us with {payload.viewer_count} viewers. "
-                f'They were playing {raider_channel_info.game_name} with title "{raider_channel_info.title}".'
+                f'They were playing {raider_channel_info.game_name} with title "{raider_channel_info.title}". '
                 f"Hey chat be nice to raiders {const.STV.donkHappy}"
             ),
         )

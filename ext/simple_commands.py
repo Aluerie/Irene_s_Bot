@@ -290,7 +290,7 @@ class DefaultCommands(IrenesCog):
         """Vanish"""
         if ctx.author.is_mod:  # type: ignore
             if "seppuku" in ctx.message.content:  # type: ignore
-                msg = f"Emperor Kappa does not allow you this honor, {ctx.author.mention} (bcs you're a moderator)"  # type: ignore
+                msg = f"Emperor Kappa does not allow you this honour, {ctx.author.mention} (bcs you're a moderator)"  # type: ignore
             else:
                 msg = "Moderators can't vanish"
             await ctx.send(msg)

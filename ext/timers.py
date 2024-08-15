@@ -30,7 +30,8 @@ class Timers(IrenesCog):
             f"{const.STV.Adge} {const.STV.DankApprove}",
             f"Don't forget to stretch and scoot {const.STV.GroupScoots}",
             f"{const.STV.Plink}",
-            f"{const.STV.uuh}"
+            f"{const.STV.uuh}",
+            f"chat don't forget to {const.STV.Plink}"
             ""
             # "Discord discord.gg/K8FuDeP",
             # "if you have nothing to do Sadge you can try !randompasta. Maybe you'll like it Okayge",
@@ -77,7 +78,7 @@ class Timers(IrenesCog):
 
             self.lines_count = 0
             await irene_channel.send(text)
-            minutes_to_sleep = 48 + random.randint(1, 11)
+            minutes_to_sleep = 49 + random.randint(1, 11)
             await asyncio.sleep(minutes_to_sleep * 60)
 
 
