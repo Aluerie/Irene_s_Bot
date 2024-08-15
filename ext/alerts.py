@@ -59,12 +59,14 @@ class Alerts(IrenesCog):
         log.info(partial_user)
         if partial_user.name is not None:  # todo: v3 type check | can payload.user.name be None?
             chatter = channel.get_chatter(partial_user.name)
+            log.info(chatter)
             display_name: str | None = getattr(chatter, "display_name", None)
-            log.info(display_name)
+            log.info("%s, and is it truly None? %s", display_name, display_name is None)
             if display_name is not None:
                 return display_name
 
         user = await partial_user.fetch()
+        log.info(user)
         return user.display_name
 
     # SECTION 3
