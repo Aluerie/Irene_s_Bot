@@ -4,23 +4,29 @@ import asyncio
 import datetime
 import random
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 
-from twitchio.ext import commands
+from twitchio.ext import commands, eventsub
 
 from bot import IrenesCog
-from utils import const
+from utils import const, formats
 
 if TYPE_CHECKING:
     import twitchio
 
     from bot import IrenesBot
 
+    class FirstRedeemsRow(TypedDict):
+        user_name: str
+        first_times: int
+
 
 class Counters(IrenesCog):
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.last_erm_notification: datetime.datetime = datetime.datetime.now(datetime.UTC)
+
+    # ERM COUNTERS
 
     @commands.Cog.event(event="event_message")  # type: ignore # one day they will fix it
     async def erm_counter(self, message: twitchio.Message) -> None:
@@ -39,12 +45,74 @@ class Counters(IrenesCog):
                 value: int = await self.bot.pool.fetchval(query, "erm")
                 await self.irene_channel().send(f"{value} Erm in chat.")
 
-    @commands.command()
+    @commands.command(aliases=["erm"])
     async def erms(self, ctx: commands.Context) -> None:
         """Get an erm_counter value"""
         query = "SELECT value FROM counters WHERE name = $1"
         value: int = await self.bot.pool.fetchval(query, "erm")
         await ctx.send(f"{value} Erm in chat.")
+
+    # FIRST COUNTER
+
+    @commands.Cog.event(event="event_eventsub_notification_channel_reward_redeem")  # type: ignore # lib issue
+    async def first_counter(self, event: eventsub.NotificationEvent) -> None:
+        """Count all redeems for the reward 'First'"""
+        payload: eventsub.CustomRewardRedemptionAddUpdateData = event.data  # type: ignore
+
+        if payload.reward.title != "First!" or payload.broadcaster.id != const.ID.Irene:
+            # Secure Irene channel and that it is exactly "First!" redeem
+            # a bit scary since I can rename it one day and then we lose the feature but not sure if there is a better way
+            # todo: create a routine checking if we have a channel point reward named First as a future fool-proof thing
+            return
+
+        query = """
+            INSERT INTO first_redeems (user_id, user_name)
+            VALUES ($1, $2)
+            ON CONFLICT (user_id) DO
+                UPDATE SET first_times = first_redeems.first_times + 1, user_name = $2
+            RETURNING first_times;
+        """
+        count: int = await self.bot.pool.fetchval(query, payload.user.id, str(payload.user.name))
+        print(count)
+        channel = self.get_channel(payload.broadcaster)
+        user_display_name = await self.get_display_name(payload.user, channel)
+
+        if count == 1:
+            msg = f'@{user_display_name}, gratz on your very first "First!" {const.STV.gg}'
+        else:
+            msg = f"@{user_display_name}, Gratz! you've been first {count} times {const.STV.gg} {const.Global.EZ}"
+        await channel.send(msg)
+
+    @commands.command(aliases=["first"])
+    async def firsts(self, ctx: commands.Context) -> None:
+        """Get top10 first redeemers"""
+        query = """
+            SELECT user_name, first_times
+            FROM first_redeems
+            ORDER BY first_times DESC
+            LIMIT 3;
+        """
+        rows: list[FirstRedeemsRow] = await self.bot.pool.fetch(query)
+        content = f'Top3 "First!" redeemers {const.STV.DankG} '
+
+        rank_medals = [
+            "\N{FIRST PLACE MEDAL}",
+            "\N{SECOND PLACE MEDAL}",
+            "\N{THIRD PLACE MEDAL}",
+        ]  # + const.DIGITS[4:10]
+        content += " ".join(
+            [
+                f"{rank_medals[i]} {row['user_name']}: {formats.plural(row['first_times']):time};"
+                for i, row in enumerate(rows)
+            ]
+        )
+        await ctx.send(content)
+
+    @commands.command()
+    async def test_digits(self, ctx: commands.Context) -> None:
+        # todo: check with this command if these emotes are fixed in web twitch chat (ffz and 7tv addons)
+        content = ' '.join(const.DIGITS)
+        await ctx.send(content)
 
 
 def prepare(bot: IrenesBot) -> None:

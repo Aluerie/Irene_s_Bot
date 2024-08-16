@@ -17,6 +17,10 @@ class Name(StrEnum):
 class Global(StrEnum):
     # BTTV
     monkaS = "monkaS"
+    # FFZ
+
+    # STV
+    EZ = "EZ"
 
 
 class BTTV(StrEnum):
@@ -44,6 +48,7 @@ class STV(StrEnum):
     DankL = "DankL"
     DankMods = "DankMods"
     DankDolmes = "DankDolmes"
+    DankG = "DankG"
     DankLurk = "DankLurk"
     DankReading = "DankReading"
     DankThink = "DankThink"
@@ -58,6 +63,7 @@ class STV(StrEnum):
     Erm = "Erm"
     FeelsBingMan = "FeelsBingMan"
     FirstTimeChadder = "FirstTimeChadder"
+    gg = "gg"
     GroupScoots = "GroupScoots"
     Hello = "Hello"
     Hey = "Hey"

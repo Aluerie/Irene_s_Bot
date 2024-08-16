@@ -19,3 +19,9 @@ CREATE TABLE IF NOT EXISTS counters (
     name TEXT NOT NULL PRIMARY KEY,
     value BIGINT DEFAULT (0)
 );
+
+CREATE TABLE IF NOT EXISTS first_redeems (
+    user_id BIGINT PRIMARY KEY,
+    user_name TEXT NOT NULL,
+    first_times BIGINT DEFAULT (1)
+);
