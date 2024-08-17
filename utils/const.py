@@ -11,19 +11,29 @@ class ID(IntEnum):
 
 
 class Name(StrEnum):
+    Irene = "irene_adler__"
+
+
+class DisplayName(StrEnum):
     Irene = "Irene_Adler__"
 
 
 class Global(StrEnum):
+    """Global emotes enabled everywhere"""
+
     # BTTV
     monkaS = "monkaS"
+
     # FFZ
+    # None?..
 
     # STV
     EZ = "EZ"
 
 
 class BTTV(StrEnum):
+    """BTTV emotes enabled at @Irene channel"""
+
     peepoHey = "peepoHey"
     PogU = "PogU"
     Smoge = "Smoge"
@@ -31,6 +41,8 @@ class BTTV(StrEnum):
 
 
 class FFZ(StrEnum):
+    """FFZ emotes enabled at @Irene channel"""
+
     Weirdge = "Weirdge"
     monkaGIGA = "monkaGIGA"
     monkaGIGAGUN = "monkaGIGAGUN"
@@ -41,6 +53,8 @@ class FFZ(StrEnum):
 
 
 class STV(StrEnum):
+    """7TV emotes enabled at @Irene channel"""
+
     Adge = "Adge"
     Cinema = "Cinema"
     DankApprove = "DankApprove"
@@ -60,6 +74,7 @@ class STV(StrEnum):
     donkJam = "donkJam"
     donkSad = "donkSad"
     DonkPrime = "DonkPrime"
+    ermtosis = "ermtosis"
     Erm = "Erm"
     FeelsBingMan = "FeelsBingMan"
     FirstTimeChadder = "FirstTimeChadder"
@@ -78,9 +93,17 @@ class STV(StrEnum):
     yo = "yo"
     uuh = "uuh"
     widepeepoHappyRightHeart = "widepeepoHappyRightHeart"
+    wow = "wow"
 
 
 class Bots(StrEnum):
+    """List of known bot names.
+
+    Mostly, used to identify other bots' messages.
+    Variable name is supposed to be their display name while
+    the value is lowercase name for easier comparing.
+    """
+
     nine_kmmrbot = "9kmmrbot"
     dotabod = "dotabod"
     Fossabot = "fossabot"
@@ -88,7 +111,7 @@ class Bots(StrEnum):
     LolRankBot = "lolrankbot"
     Moobot = "moobot"
     Nightbot = "nightbot"
-    Sery_Bot = "Sery_Bot"
+    Sery_Bot = "sery_Bot"
     StreamLabs = "streamlabs"
     Streamelements = "streamelements"
     Supibot = "supibot"

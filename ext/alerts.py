@@ -140,7 +140,7 @@ class Alerts(IrenesCog):
         if not message.first or message.echo or not message.content:
             return
 
-        await asyncio.sleep(2.4)
+        await asyncio.sleep(3.0)
         if message.author.name not in self.ban_list:
             await message.channel.send(const.STV.FirstTimeChadder)
 

@@ -33,24 +33,39 @@ class Counters(IrenesCog):
         """Erm Counter"""
         if message.echo or not message.content or message.author.name in const.Bots:
             return
+        if message.channel.name != const.Name.Irene:
+            return
+        if not re.search(r"\bErm\b", message.content):
+            return
 
-        if re.search(r"\bErm\b", message.content):
-            query = "UPDATE counters SET value = value + 1 where name = $1"
+        query = """--sql
+            UPDATE counters
+            SET value = value + 1
+            where name = $1
+            RETURNING value;
+        """
+        value: int = await self.bot.pool.fetchval(query, "erm")
+
+        # milestone
+        if value % 1000 == 0:
+            await message.channel.send(f"{const.STV.wow} we reached a milestone of {value} {const.STV.Erm} in chat")
+            return
+
+        # random notification/reminder
+        now = datetime.datetime.now(datetime.UTC)
+        if random.randint(0, 150) < 2 and (now - self.last_erm_notification).seconds > 180:
+            await asyncio.sleep(3)
+            query = "SELECT value FROM counters WHERE name = $1"
             value: int = await self.bot.pool.fetchval(query, "erm")
-
-            now = datetime.datetime.now(datetime.UTC)
-            if random.randint(0, 100) < 2 and (now - self.last_erm_notification).seconds > 180:
-                await asyncio.sleep(3)
-                query = "SELECT value FROM counters WHERE name = $1"
-                value: int = await self.bot.pool.fetchval(query, "erm")
-                await self.irene_channel().send(f"{value} Erm in chat.")
+            await message.channel.send(f"{value} {const.STV.Erm} in chat.")
+            return
 
     @commands.command(aliases=["erm"])
     async def erms(self, ctx: commands.Context) -> None:
         """Get an erm_counter value"""
         query = "SELECT value FROM counters WHERE name = $1"
         value: int = await self.bot.pool.fetchval(query, "erm")
-        await ctx.send(f"{value} Erm in chat.")
+        await ctx.send(f"{value} {const.STV.Erm} in chat.")
 
     # FIRST COUNTER
 
@@ -65,7 +80,7 @@ class Counters(IrenesCog):
             # todo: create a routine checking if we have a channel point reward named First as a future fool-proof thing
             return
 
-        query = """
+        query = """--sql
             INSERT INTO first_redeems (user_id, user_name)
             VALUES ($1, $2)
             ON CONFLICT (user_id) DO
@@ -86,7 +101,7 @@ class Counters(IrenesCog):
     @commands.command(aliases=["first"])
     async def firsts(self, ctx: commands.Context) -> None:
         """Get top10 first redeemers"""
-        query = """
+        query = """--sql
             SELECT user_name, first_times
             FROM first_redeems
             ORDER BY first_times DESC
@@ -111,7 +126,7 @@ class Counters(IrenesCog):
     @commands.command()
     async def test_digits(self, ctx: commands.Context) -> None:
         # todo: check with this command if these emotes are fixed in web twitch chat (ffz and 7tv addons)
-        content = ' '.join(const.DIGITS)
+        content = " ".join(const.DIGITS)
         await ctx.send(content)
 
 
