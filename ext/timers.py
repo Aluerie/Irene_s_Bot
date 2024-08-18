@@ -67,6 +67,7 @@ class Timers(IrenesCog):
 
     @irenes_routine(iterations=1)
     async def timer_task(self) -> None:
+        """Task to send periodic messages into irene's channel on timer"""
         await asyncio.sleep(10 * 60)
         messages = self.messages.copy()
         random.shuffle(messages)
