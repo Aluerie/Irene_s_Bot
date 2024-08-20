@@ -58,8 +58,9 @@ class Timers(IrenesCog):
         self.stream_online = False
         self.timer_task.cancel()
 
-    @commands.Cog.event()  # type: ignore # lib issue
-    async def event_message(self, message: twitchio.Message) -> None:
+    @commands.Cog.event(event="event_message")  # type: ignore # lib issue
+    async def count_messages(self, message: twitchio.Message) -> None:
+        """Count messages between timers so the bot doesn't spam fill up an empty chat."""
         if message.echo or not self.stream_online:
             return
 
@@ -74,12 +75,12 @@ class Timers(IrenesCog):
 
         irene_channel = self.irene_channel()
         for text in itertools.cycle(messages):
-            while self.lines_count < 50:
+            while self.lines_count < 60:
                 await asyncio.sleep(60)
 
             self.lines_count = 0
             await irene_channel.send(text)
-            minutes_to_sleep = 49 + random.randint(1, 11)
+            minutes_to_sleep = 59 + random.randint(1, 21)
             await asyncio.sleep(minutes_to_sleep * 60)
 
 
