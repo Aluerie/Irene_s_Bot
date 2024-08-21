@@ -133,15 +133,19 @@ class Alerts(IrenesCog):
         """Bans."""
         payload: eventsub.ChannelBanData = event.data  # type: ignore
         assert payload.user.name
-        self.ban_list.add(payload.user.name)
+        self.ban_list.add(payload.user.name.lower())
 
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
     async def first_message(self, message: twitchio.Message) -> None:
         if not message.first or message.echo or not message.content:
             return
 
-        await asyncio.sleep(3.0)
-        if message.author.name not in self.ban_list:
+        if not isinstance(message.author.name, str):
+            # some twitchio type bs uncertainty
+            return
+
+        await asyncio.sleep(3.3)
+        if message.author.name.lower() not in self.ban_list:
             await message.channel.send(const.STV.FirstTimeChadder)
 
 
