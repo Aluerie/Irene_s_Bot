@@ -56,9 +56,10 @@ class Timers(IrenesCog):
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
     async def count_messages(self, message: twitchio.Message) -> None:
         """Count messages between timers so the bot doesn't spam fill up an empty chat."""
-        if not message.author.name or message.author.name.lower() in const.Bots:
-            # * do not count weird None edge cases;
-            # * do not count known Bots' messages in;
+        if message.echo:
+            # * do not count messages from the bot itself
+            # other bots soon^tm will stop talking in my chat at all so this is a fine check;
+            # No need for `message.author.name.lower() not in const.Bot` condition
             return
 
         self.lines_count += 1
