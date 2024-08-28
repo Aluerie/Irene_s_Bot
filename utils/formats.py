@@ -9,11 +9,12 @@ if TYPE_CHECKING:
 class plural:  # noqa: N801
     """Helper class to format tricky plural nouns.
 
-    Examples: ::
-
+    Examples
+    --------
         >>> format(plural(1), 'child|children')  # '1 child'
         >>> format(plural(8), 'week|weeks')  # '8 weeks'
         >>> f'{plural(3):reminder}' # 3 reminders
+
     """
 
     # licensed MPL v2 from Rapptz/RoboDanny
@@ -32,7 +33,16 @@ class plural:  # noqa: N801
         return f"{v} {singular}"
 
 
-def seconds_to_words(delta: datetime.timedelta) -> str:
+def timedelta_to_words(delta: datetime.timedelta) -> str:
+    """Convert `datetime.timedelta` to a string of humanly readable words.
+
+    Example:
+    -------
+        >>> x = datetime.timedelta(seconds=66)
+        >>> timedelta_to_words(x)
+        >>> "1 minute 6 seconds"
+
+    """
     total_seconds = int(delta.total_seconds())
 
     minutes, seconds = divmod(total_seconds, 60)

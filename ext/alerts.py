@@ -137,7 +137,7 @@ class Alerts(IrenesCog):
 
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
     async def first_message(self, message: twitchio.Message) -> None:
-        if not message.first or message.echo or not message.content:
+        if not message.first or not message.content:
             return
 
         if not isinstance(message.author.name, str):
@@ -149,6 +149,6 @@ class Alerts(IrenesCog):
             await message.channel.send(const.STV.FirstTimeChadder)
 
 
-# f"{payload.duration} sec ad break is starting.
 def prepare(bot: IrenesBot) -> None:
+    """Load AluBot extension. Framework of twitchio."""
     bot.add_cog(Alerts(bot))

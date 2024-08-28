@@ -19,20 +19,20 @@ class DisplayName(StrEnum):
 
 
 class Global(StrEnum):
-    """Global emotes enabled everywhere"""
+    """Global emotes that are usable everywhere."""
 
     # BTTV
     monkaS = "monkaS"
 
     # FFZ
-    # None?..
+    # None - no good ones?..
 
     # STV
     EZ = "EZ"
 
 
 class BTTV(StrEnum):
-    """BTTV emotes enabled at @Irene channel"""
+    """Some of BTTV emotes enabled at @Irene channel."""
 
     peepoHey = "peepoHey"
     PogU = "PogU"
@@ -41,7 +41,7 @@ class BTTV(StrEnum):
 
 
 class FFZ(StrEnum):
-    """FFZ emotes enabled at @Irene channel"""
+    """Some of FFZ emotes enabled at @Irene channel."""
 
     Weirdge = "Weirdge"
     monkaGIGA = "monkaGIGA"
@@ -53,7 +53,7 @@ class FFZ(StrEnum):
 
 
 class STV(StrEnum):
-    """7TV emotes enabled at @Irene channel"""
+    """Some of 7TV emotes enabled at @Irene channel."""
 
     Adge = "Adge"
     Cinema = "Cinema"
@@ -102,6 +102,8 @@ class Bots(StrEnum):
     Mostly, used to identify other bots' messages.
     Variable name is supposed to be their display name while
     the value is lowercase name for easier comparing.
+
+    I might enable these bots in the channel so let's keep them all here.
     """
 
     nine_kmmrbot = "9kmmrbot"
@@ -111,11 +113,11 @@ class Bots(StrEnum):
     LolRankBot = "lolrankbot"
     Moobot = "moobot"
     Nightbot = "nightbot"
-    Sery_Bot = "sery_Bot"
+    Sery_Bot = "sery_bot"
     StreamLabs = "streamlabs"
     Streamelements = "streamelements"
     Supibot = "supibot"
-    WizeBot = "wizeBot"
+    WizeBot = "wizebot"
 
 
 DIGITS = [

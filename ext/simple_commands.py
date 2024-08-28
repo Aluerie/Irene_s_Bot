@@ -29,10 +29,12 @@ class DefaultCommands(IrenesCog):
 
     @commands.command()
     async def erdoc(self, ctx: commands.Context) -> None:
+        """Link to my Elden Ring notes."""
         await ctx.send("docs.google.com/document/d/1o4RFCGdgFsCuNQMc9zXx9iJGY--WLJjaPqdH4_YkOLk/edit?usp=sharing")
 
     @commands.command()
     async def run(self, ctx: commands.Context) -> None:
+        """Explanation of my first Sekiro hitless run."""
         msg = (
             "All Bosses & MiniBosses, Charmless. For details about routing/plan/strategies look for AB&M section "
             "of this !sekirodoc: "
@@ -43,6 +45,7 @@ class DefaultCommands(IrenesCog):
 
     @commands.command()
     async def sekirodoc(self, ctx: commands.Context) -> None:
+        """Link to my Sekiro notes."""
         await ctx.send("docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?usp=sharing")
 
     # 2. MORE OR LESS STABLE COMMANDS
@@ -59,32 +62,36 @@ class DefaultCommands(IrenesCog):
 
     @commands.command(name="commands", aliases=["help"])
     async def command_list(self, ctx: commands.Context) -> None:
-        """Commands"""
+        """Get a list of bot commands."""
         await ctx.send('Not implemented yet, for now use "!cmd list"')
 
     @commands.command()
     async def discord(self, ctx: commands.Context) -> None:
-        """Discord"""
+        """Link to my discord community server."""
         await ctx.send(f"{const.STV.Discord} discord.gg/K8FuDeP")
 
     @commands.command()
     async def donate(self, ctx: commands.Context) -> None:
-        """Donate"""
+        """Link to my Donation page."""
         await ctx.send("donationalerts.com/r/irene_adler__")
 
     @commands.command()
     async def followage(self, ctx: commands.Context) -> None:
-        """Followage"""
+        """Get your follow age."""
+        # just a small joke to teach people
         await ctx.send("Just click your name 4Head")
 
     @commands.command(aliases=["hi", "yo"])
     async def hello(self, ctx: commands.Context) -> None:
-        """Hello"""
+        """Hello."""
         await ctx.send(f"{const.STV.Hello} @{ctx.author.name} {const.STV.yo}")
 
     @commands.command()
     async def love(self, ctx: commands.Context, *, arg: str) -> None:
-        """Love"""
+        """Measure love between chatter and `arg`.
+
+        arg can be a user or anything else.
+        """
 
         def choose_love_emote() -> tuple[int, str]:
             love = random.randint(0, 100)
@@ -126,7 +133,7 @@ class DefaultCommands(IrenesCog):
 
     @commands.command(aliases=["lorem", "ipsum"])
     async def loremipsum(self, ctx: commands.Context) -> None:
-        """Lorem ipsum"""
+        """Lorem ipsum."""
         await ctx.send(  # cSpell:disable
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. "
             "Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. "
@@ -138,7 +145,7 @@ class DefaultCommands(IrenesCog):
 
     @commands.command()
     async def lurk(self, ctx: commands.Context) -> None:
-        """Lurk"""
+        """Make it clear to the chat that you are lurking."""
         try:
             mention = ctx.author.mention  # type: ignore
         except:
@@ -147,7 +154,10 @@ class DefaultCommands(IrenesCog):
 
     @commands.command(name="decide", aliases=["ball", "8ball", "answer", "question", "yesno"])
     async def magic_ball(self, ctx: commands.Context, *, text: str | None = None) -> None:
-        """Magic Ball"""
+        """Get a random answer from a Magic Ball.
+
+        Better than ChatGPT.
+        """
         if not text:
             await ctx.send(f"Wrong command usage! You need to ask the bot yes/no question with it {const.FFZ.peepoWTF}")
             return
@@ -199,12 +209,12 @@ class DefaultCommands(IrenesCog):
 
     @commands.command()
     async def nomic(self, ctx: commands.Context) -> None:
-        """No mic"""
+        """No mic."""
         await ctx.send("Please read info below the stream, specifically, FAQ")
 
     @commands.command()
     async def oversight(self, ctx: commands.Context) -> None:
-        """Oversight"""
+        """Give me the famous Oversight Dark Willow copypaste."""
         await ctx.send(
             "The biggest🙌💯oversight🔭🔍with Dark✊🏾Willow🌳is that she's unbelievably sexy🤤💦🍆. "
             "I can't go on a hour🕐of my day🌞without thinking💭💦about plowing👉👌🚜that tight😳wooden🌳ass💦🍑. "
@@ -215,18 +225,21 @@ class DefaultCommands(IrenesCog):
 
     @commands.command()
     async def ping(self, ctx: commands.Context) -> None:
-        """Ping"""
+        """Ping the bot.
+
+        Currently doesn't provide any useful info.
+        """
         await ctx.send("\N{TABLE TENNIS PADDLE AND BALL} Pong!")
 
     @commands.command()
     async def playlist(self, ctx: commands.Context) -> None:
-        """Get a link to Spotify playlist"""
+        """Get the link to my Spotify playlist."""
         await ctx.send("open.spotify.com/playlist/7fVAcuDPLVAUL8555vy8Kz?si=b26cecab2cf24608")  # cSpell: ignore DPLVAUL
 
     @commands.cooldown(rate=1, per=60, bucket=commands.Bucket.channel)
     @commands.command(aliases=["rr", "russianroulette"])
     async def roulette(self, ctx: commands.Context) -> None:
-        """Russian roulette"""
+        """Play russian roulette."""
         mention: str = ctx.author.mention  # type: ignore
         user_id: int = ctx.author.id  # type: ignore # in reality it's str and timeout accepts it just fine
 
@@ -252,13 +265,13 @@ class DefaultCommands(IrenesCog):
     @checks.is_mod()
     @commands.command(aliases=["so"])
     async def shoutout(self, ctx: commands.Context, user: twitchio.User) -> None:
-        """Shoutout"""
+        """Do /shoutout to a user."""
         streamer = await ctx.channel.user()
         await streamer.shoutout(config.TTG_IRENE_ACCESS_TOKEN, user.id, const.ID.Irene)
 
     @commands.command()
     async def song(self, ctx: commands.Context) -> None:
-        """Get currently played song on Spotify"""
+        """Get currently played song on Spotify."""
         url = f"https://spotify.aidenwallis.co.uk/u/{config.SPOTIFY_AIDENWALLIS_CODE}"
         async with self.bot.session.get(url) as resp:
             msg = await resp.text()
@@ -271,23 +284,23 @@ class DefaultCommands(IrenesCog):
 
     @commands.command()
     async def source(self, ctx: commands.Context) -> None:
-        """Get a link to the bot's GitHub repository"""
+        """Get the link to the bot's GitHub repository."""
         await ctx.send(f"{self.bot.repo} {const.STV.DankReading}")
 
     @commands.command()
     async def uptime(self, ctx: commands.Context) -> None:
-        """Get stream uptime"""
+        """Get stream uptime."""
         streamer = await ctx.channel.user()
         stream = next(iter(await self.bot.fetch_streams(user_ids=[streamer.id])), None)  # None if offline
         if stream is None:
             await ctx.send(f"The stream is offline {const.STV.Offline}")
         else:
             uptime = datetime.datetime.now(datetime.UTC) - stream.started_at
-            await ctx.send(f"{formats.seconds_to_words(uptime)} {const.STV.peepoDapper}")
+            await ctx.send(f"{formats.timedelta_to_words(uptime)} {const.STV.peepoDapper}")
 
     @commands.command(aliases=["seppuku"])
     async def vanish(self, ctx: commands.Context) -> None:
-        """Vanish"""
+        """Allows for chatters to vanish from the chat by time-outing themselves."""
         if ctx.author.is_mod:  # type: ignore
             if "seppuku" in ctx.message.content:  # type: ignore
                 msg = f"Emperor Kappa does not allow you this honour, {ctx.author.mention} (bcs you're a moderator)"  # type: ignore
@@ -301,9 +314,10 @@ class DefaultCommands(IrenesCog):
 
     @commands.command()
     async def vods(self, ctx: commands.Context) -> None:
-        """Get a link to youtube vods archive"""
+        """Get the link to youtube vods archive."""
         await ctx.send(f"youtube.com/@Aluerie_VODS/ {const.STV.Cinema}")
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load AluBot extension. Framework of twitchio."""
     bot.add_cog(DefaultCommands(bot))

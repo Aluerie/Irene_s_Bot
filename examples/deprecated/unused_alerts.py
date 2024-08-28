@@ -69,7 +69,7 @@ class UnusedAlerts(IrenesCog):
         display_name = await self.get_display_name(payload.user, channel)
         await channel.send(f'@{display_name} just cheered {payload.bits} bits: "{payload.message}"')
 
-    @commands.Cog.event(event="event_eventsub_notification_stream_start")  # type: ignore # lib issue
+    @commands.Cog.event(event="event_eventsub_notification_subscription_gift")  # type: ignore # lib issue
     async def sub_gift(self, event: eventsub.NotificationEvent) -> None:
         """Somebody gifted subscriptions to the channel."""
         payload: eventsub.ChannelSubscriptionGiftData = event.data  # type: ignore

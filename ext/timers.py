@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 class Timers(IrenesCog):
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
-        self.stream_online: bool = False
 
         self.messages: list[str] = [
             f"FIX YOUR POSTURE {const.BTTV.weirdChamp}",
@@ -31,8 +30,7 @@ class Timers(IrenesCog):
             f"Don't forget to stretch and scoot {const.STV.GroupScoots}",
             f"{const.STV.Plink}",
             f"{const.STV.uuh}",
-            f"chat don't forget to {const.STV.Plink}"
-            ""
+            f"chat don't forget to {const.STV.Plink}",
             # "Discord discord.gg/K8FuDeP",
             # "if you have nothing to do Sadge you can try !randompasta. Maybe you'll like it Okayge",
         ]
@@ -43,46 +41,48 @@ class Timers(IrenesCog):
     async def check_stream_online(self) -> None:
         stream = next(iter(await self.bot.fetch_streams(user_ids=[const.ID.Irene])), None)  # None if offline
         if stream:
-            self.stream_online = True
             self.timer_task.start()
 
     @commands.Cog.event()  # type: ignore # lib issue
     async def event_eventsub_notification_stream_start(self, _: eventsub.StreamOnlineData) -> None:
         """Stream started (went live)."""
-        self.stream_online = True
         self.timer_task.start()
 
     @commands.Cog.event()  # type: ignore # lib issue
     async def event_eventsub_notification_stream_end(self, _: eventsub.StreamOfflineData) -> None:
         """Stream ended (went offline)."""
-        self.stream_online = False
         self.timer_task.cancel()
 
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
     async def count_messages(self, message: twitchio.Message) -> None:
         """Count messages between timers so the bot doesn't spam fill up an empty chat."""
-        if message.echo or not self.stream_online:
+        if not message.author.name or message.author.name.lower() in const.Bots:
+            # * do not count weird None edge cases;
+            # * do not count known Bots' messages in;
             return
 
         self.lines_count += 1
 
     @irenes_routine(iterations=1)
     async def timer_task(self) -> None:
-        """Task to send periodic messages into irene's channel on timer"""
+        """Task to send periodic messages into irene's channel on timer."""
         await asyncio.sleep(10 * 60)
         messages = self.messages.copy()
         random.shuffle(messages)
 
+        # refresh lines count so it only counts messages from the current stream.
+        self.lines_count = 0
         irene_channel = self.irene_channel()
         for text in itertools.cycle(messages):
-            while self.lines_count < 60:
-                await asyncio.sleep(60)
+            while self.lines_count < 99:
+                await asyncio.sleep(100)
 
             self.lines_count = 0
             await irene_channel.send(text)
-            minutes_to_sleep = 59 + random.randint(1, 21)
+            minutes_to_sleep = 69 + random.randint(1, 21)
             await asyncio.sleep(minutes_to_sleep * 60)
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load AluBot extension. Framework of twitchio."""
     bot.add_cog(Timers(bot))
