@@ -7,7 +7,11 @@ if TYPE_CHECKING:
 
 
 class plural:  # noqa: N801
-    """Helper class to format tricky plural nouns.
+    """Helper class to format tricky number + singular/plural noun situations.
+
+    Returns a human-readable string combining number and a proper noun.
+    `format_spec` in this case is supposed to list both singular/plural forms with a separator "|".
+    See examples.
 
     Examples
     --------
@@ -20,17 +24,17 @@ class plural:  # noqa: N801
     # licensed MPL v2 from Rapptz/RoboDanny
     # https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/formats.py
 
-    def __init__(self, value: int) -> None:
-        self.value: int = value
+    def __init__(self, number: int) -> None:
+        self.number: int = number
 
     @override
     def __format__(self, format_spec: str) -> str:
-        v = self.value
+        number = self.number
         singular, separator, plural = format_spec.partition("|")
         plural = plural or f"{singular}s"
-        if abs(v) != 1:
-            return f"{v} {plural}"
-        return f"{v} {singular}"
+        if abs(number) != 1:
+            return f"{number} {plural}"
+        return f"{number} {singular}"
 
 
 def timedelta_to_words(delta: datetime.timedelta) -> str:

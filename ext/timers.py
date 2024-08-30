@@ -59,7 +59,7 @@ class Timers(IrenesCog):
         if message.echo:
             # * do not count messages from the bot itself
             # other bots soon^tm will stop talking in my chat at all so this is a fine check;
-            # No need for `message.author.name.lower() not in const.Bot` condition
+            # No need for `message.author.name.lower() in const.Bot` condition
             return
 
         self.lines_count += 1

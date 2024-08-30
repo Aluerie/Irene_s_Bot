@@ -51,7 +51,6 @@ async def start_the_bot() -> None:
 @click.pass_context
 def main(click_ctx: click.Context) -> None:
     """Launches the bot."""
-
     if click_ctx.invoked_subcommand is None:
         with setup_logging():
             asyncio.run(start_the_bot())
