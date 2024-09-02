@@ -56,6 +56,7 @@ class STV(StrEnum):
     """Some of 7TV emotes enabled at @Irene channel."""
 
     Adge = "Adge"
+    ApuBritish = "ApuBritish"
     Cinema = "Cinema"
     DankApprove = "DankApprove"
     dankHey = "dankHey"
