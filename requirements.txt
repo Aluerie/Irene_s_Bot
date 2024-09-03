@@ -1,13 +1,24 @@
 --extra-index-url https://pip.twitchio.dev  
 
+# TWITCH
 twitchio[speed] @ git+https://github.com/TwitchIO/TwitchIO.git
+
+# DISCORD
 discord.py
 
+# BOT'S BASE
 asyncpg
 asyncpg-stubs
+aiohttp==3.9.5
+
+# DOTA 2 
+steamio @ git+https://github.com/Aluerie/steam.py@introduce-ext.dota2
+
+# OPTIMISATION
+orjson
+uvloop; platform_system == 'Linux'  # ignore on non-Linux - because not available
+
+# JUPYTER NOTEBOOKS
+ipykernel; platform_system == 'Windows'
 
 click
-uvloop; platform_system == 'Linux'  #ignore on windows because not available
-
-# Jupyter Notebooks (I like to mess with those on home PC)
-ipykernel; platform_system == 'Windows'

@@ -11,10 +11,14 @@ if TYPE_CHECKING:
 
 
 class NewCog(IrenesCog):
+    """."""
+
     @commands.command()
     async def new_command(self, ctx: commands.Context) -> None:
+        """."""
         await ctx.send("Not implemented yet!")
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(NewCog(bot))

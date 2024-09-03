@@ -120,5 +120,5 @@ class TranslationCog(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
-    """Load AluBot extension. Framework of twitchio."""
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(TranslationCog(bot))

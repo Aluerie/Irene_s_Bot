@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import TYPE_CHECKING, Any, Self, override
 
@@ -8,6 +9,7 @@ from twitchio.ext import commands, eventsub
 
 from core import CORE_EXTENSIONS
 from ext import EXTENSIONS
+from utils.dota import Dota2Client
 
 from .exc_manager import ExceptionManager
 
@@ -23,6 +25,10 @@ log = logging.getLogger(__name__)
 
 
 class IrenesBot(commands.Bot):
+
+    if TYPE_CHECKING:
+        logs_via_webhook_handler: logging.Handler
+
     def __init__(
         self,
         access_token: str,
@@ -31,17 +37,14 @@ class IrenesBot(commands.Bot):
         session: ClientSession,
         pool: asyncpg.Pool[asyncpg.Record],
     ) -> None:
-        """Init
+        """Initiate IrenesBot.
 
         Parameters
         ----------
-        access_token : str
-            _description_
-        initial_channels : list[str]
-            List of channel names.
-            Interestingly enough, they don't straight accept channel ids.
-        """
+        initial_channels
+            List of channel names (names, not ids!).
 
+        """
         self.prefixes = ["!", "?", "$"]
         super().__init__(token=access_token, prefix=self.prefixes, initial_channels=initial_channels)
         self.database: asyncpg.Pool[asyncpg.Record] = pool
@@ -54,6 +57,8 @@ class IrenesBot(commands.Bot):
 
         self.repo = "https://github.com/Aluerie/Irene_s_Bot"
 
+        self.dota = Dota2Client(self)
+
     async def __aenter__(self) -> Self:
         return self
 
@@ -64,6 +69,7 @@ class IrenesBot(commands.Bot):
     @override
     async def event_ready(self) -> None:
         log.info("Irene_s_Bot is ready as %s (user_id = %s)", self.nick, self.user_id)
+        await self.dota.wait_until_ready()
 
     @override
     async def event_command_error(self, ctx: commands.Context, error: Exception) -> None:
@@ -99,4 +105,18 @@ class IrenesBot(commands.Bot):
             self.load_module(ext)
         for ext in EXTENSIONS:
             self.load_module(ext)
+
         await super().start()
+        # await asyncio.gather(
+        #     super().start(),
+        #     self.dota.login(),
+        # )
+
+    @override
+    async def close(self) -> None:
+        await self.dota.close()
+        await super().close()
+
+    def webhook_from_url(self, url: str) -> discord.Webhook:
+        """A shortcut function with filled in discord.Webhook.from_url args."""
+        return discord.Webhook.from_url(url=url, session=self.session)

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class DefaultCommands(IrenesCog):
     """Simple commands.
 
-    Simple in a sense that they are just somewhat static;
+    Simple in a sense that they are just somewhat static and their implementation is simple.
     Probably a better name would be "uncategorised custom commands"
     because they are defined here in code, instead of
     sitting in the database like commands from `custom_commands.py` do.
@@ -36,10 +36,9 @@ class DefaultCommands(IrenesCog):
     async def run(self, ctx: commands.Context) -> None:
         """Explanation of my first Sekiro hitless run."""
         msg = (
-            "All Bosses & MiniBosses, Charmless. For details about routing/plan/strategies look for AB&M section "
-            "of this !sekirodoc: "
+            "All Bosses & MiniBosses, charmless. For details about routing/plan/strategies look !sekirodoc: "
             "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?usp=sharing "  # cSpell: ignore vwwl
-            "It's my first ever hitless run, so there is a lot to learn."
+            "It's my first ever hitless run, so there is a lot to learn & grind."
         )
         await ctx.send(msg)
 
@@ -319,5 +318,5 @@ class DefaultCommands(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
-    """Load AluBot extension. Framework of twitchio."""
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(DefaultCommands(bot))

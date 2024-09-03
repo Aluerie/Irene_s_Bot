@@ -133,3 +133,9 @@ DIGITS = [
     "\N{DIGIT EIGHT}\N{COMBINING ENCLOSING KEYCAP}",
     "\N{DIGIT NINE}\N{COMBINING ENCLOSING KEYCAP}",
 ]
+
+
+class Logo(StrEnum):
+    """Images for brands and logos."""
+
+    Twitch = "https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png"
