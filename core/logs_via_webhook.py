@@ -114,7 +114,7 @@ class LogsViaWebhook(IrenesCog):
             await self.send_log_record(record)
 
 
-async def prepare(bot: IrenesBot) -> None:
+def prepare(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
     if platform.system() == "Windows":
         return
