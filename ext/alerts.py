@@ -137,6 +137,10 @@ class Alerts(IrenesCog):
 
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
     async def first_message(self, message: twitchio.Message) -> None:
+        """Greet first time chatters with FirstTimeChadder treatment.
+
+        This functions filters out spam-bots that should be perma-banned right away by other features or other bots.
+        """
         if not message.first or not message.content:
             return
 
