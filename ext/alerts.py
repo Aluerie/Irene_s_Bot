@@ -20,6 +20,11 @@ log = logging.getLogger("alerts")
 
 
 class Alerts(IrenesCog):
+    """Twitch Chat Alerts.
+
+    Mostly, EventSub events that are nice to have a notification in twitch chat for.
+    """
+
     # TODO: 3.0 will fix ES events so the typehint gonna be correct like this:
     # (self,  payload: eventsub.CustomRewardRedemptionAddUpdateData)
     # and we wont need this ugly first line
@@ -126,7 +131,7 @@ class Alerts(IrenesCog):
         payload: eventsub.ChannelAdBreakBeginData = event.data  # type: ignore
         channel = self.get_channel(payload.broadcaster)
         word = "automatic" if payload.is_automatic else "manual"
-        await channel.send(f"{payload.duration} secs {word} ad break is starting.")
+        await channel.send(f"{payload.duration} secs {word} ad break is starting {const.STV.peepoAd}")
 
     @commands.Cog.event(event="event_eventsub_notification_ban")  # type: ignore # lib issue
     async def bans_timeouts(self, event: eventsub.NotificationEvent) -> None:

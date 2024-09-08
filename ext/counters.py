@@ -17,11 +17,15 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
     class FirstRedeemsRow(TypedDict):
+        """`first_redeems` Table Columns."""
+
         user_name: str
         first_times: int
 
 
 class Counters(IrenesCog):
+    """Track some silly number counters of how many times this or that happened."""
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.last_erm_notification: datetime.datetime = datetime.datetime.now(datetime.UTC)
@@ -30,7 +34,7 @@ class Counters(IrenesCog):
 
     @commands.Cog.event(event="event_message")  # type: ignore # one day they will fix it
     async def erm_counter(self, message: twitchio.Message) -> None:
-        """Erm Counter"""
+        """Erm Counter."""
         if message.echo or not message.content or message.author.name in const.Bots:
             return
         if message.channel.name != const.Name.Irene:
@@ -62,7 +66,7 @@ class Counters(IrenesCog):
 
     @commands.command(aliases=["erm"])
     async def erms(self, ctx: commands.Context) -> None:
-        """Get an erm_counter value"""
+        """Get an erm_counter value."""
         query = "SELECT value FROM counters WHERE name = $1"
         value: int = await self.bot.pool.fetchval(query, "erm")
         await ctx.send(f"{value} {const.STV.Erm} in chat.")
@@ -71,7 +75,7 @@ class Counters(IrenesCog):
 
     @commands.Cog.event(event="event_eventsub_notification_channel_reward_redeem")  # type: ignore # lib issue
     async def first_counter(self, event: eventsub.NotificationEvent) -> None:
-        """Count all redeems for the reward 'First'"""
+        """Count all redeems for the reward 'First'."""
         payload: eventsub.CustomRewardRedemptionAddUpdateData = event.data  # type: ignore
 
         if payload.reward.title != "First!" or payload.broadcaster.id != const.ID.Irene:
@@ -100,7 +104,7 @@ class Counters(IrenesCog):
 
     @commands.command(aliases=["first"])
     async def firsts(self, ctx: commands.Context) -> None:
-        """Get top10 first redeemers"""
+        """Get top10 first redeemers."""
         query = """--sql
             SELECT user_name, first_times
             FROM first_redeems
@@ -125,10 +129,16 @@ class Counters(IrenesCog):
 
     @commands.command()
     async def test_digits(self, ctx: commands.Context) -> None:
-        # todo: check with this command if these emotes are fixed in web twitch chat (ffz and 7tv addons)
+        """Test digit emotes in twitch chat.
+
+        At the point of writing this function - the number emotes like :one: were not working
+        in twitch chat powered with FFZ/7TV addons.
+        So use it to check if it's fixed. if yes - then we can rewrite some functions to use these emotes.
+        """
         content = " ".join(const.DIGITS)
         await ctx.send(content)
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(Counters(bot))

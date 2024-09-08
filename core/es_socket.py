@@ -11,28 +11,35 @@ if TYPE_CHECKING:
 
 
 class EventSubSubscriptions(IrenesCog):
+    """Centralized manager of EventSub subscriptions."""
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.bot.loop.create_task(self.subscribe_to_events())
 
     async def subscribe_to_events(self) -> None:
+        """Subscribe to EventSub events.
+
+        Currently, this is a one-channel bot so there is not much of a headache, just
+        subscriptions to my channel with my access token.
+
+        Links
+        -----
+        * TwitchDev EventSub Docs:
+            https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types
+        * TwitchIO EventSub Docs:
+            https://twitchio.dev/en/latest/exts/eventsub.html#event-reference
+
+        """
         broadcaster = const.ID.Irene
         token = config.TTG_IRENE_ACCESS_TOKEN
         # moderator = const.BOT_TWITCH_ID
 
-        # https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types
-        # todo: currently I just have power-hungry token for irene that has all tokens
-        # and token with chat: read/edit for the bot
-        # we can narrow it down to only what we need.
-
-        # the order here is alphabetic or more like same as
-        # https://twitchio.dev/en/latest/exts/eventsub.html#twitchio.ext.eventsub.EventSubClient
-        # Other Important convient links:
-        # https://twitchio.dev/en/latest/exts/eventsub.html#event-reference
-        # https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/
-
+        # EventSub Subscriptions Table (order - function name sorted by alphabet).
+        # Subscription Name                     Permission
+        # -----------------------------------------------------
         # Ad break begin                        channel:read:ads
-        # await self.bot.eventsub.subscribe_channel_ad_break_begin(broadcaster, token)
+        await self.bot.eventsub.subscribe_channel_ad_break_begin(broadcaster, token)
         # Bans                                  channel:moderate
         await self.bot.eventsub.subscribe_channel_bans(broadcaster, token)
         # Follows                               moderator:read:followers

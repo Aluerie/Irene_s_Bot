@@ -15,12 +15,19 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
     class KeywordDict(TypedDict):
+        """Schema for `self.keywords` elements."""
+
         aliases: list[str]
         response: str
         dt: datetime.datetime
 
 
 class Keywords(IrenesCog):
+    """React to specific key word / key phrases with bot's own messages.
+
+    Mostly used to make a small feeling of a crowd - something like many users are Pog-ing.
+    """
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.keywords: list[KeywordDict] = [
@@ -42,6 +49,7 @@ class Keywords(IrenesCog):
 
     @commands.Cog.event(event="event_message")  # type: ignore # lib issue
     async def keywords_response(self, message: twitchio.Message) -> None:
+        """Sends a flavour message if a keyword/key phrase was spotted in the chat."""
         if message.echo or not message.content or random.randint(1, 100) > 5:
             return
 
@@ -54,4 +62,5 @@ class Keywords(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(Keywords(bot))

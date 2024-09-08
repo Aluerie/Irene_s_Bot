@@ -42,5 +42,8 @@
         "Wize",
         "wizebot"
     ],
-    "python.REPL.enableREPLSmartSend": false
+    "python.REPL.enableREPLSmartSend": false,
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": "file:///d%3A/LAPTOP/Irene_s_Bot/.github/workflows/deploy.yml"
+    }
 }

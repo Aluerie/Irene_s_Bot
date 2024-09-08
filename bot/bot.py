@@ -25,6 +25,12 @@ log = logging.getLogger(__name__)
 
 
 class IrenesBot(commands.Bot):
+    """Main class for Irene's Bot.
+
+    Essentially subclass over TwitchIO's Client.
+    Used to interact with the Twitch API, EventSub and more.
+    Includes `ext.commands` extension to organize cogs/commands framework.
+    """
 
     if TYPE_CHECKING:
         logs_via_webhook_handler: logging.Handler
@@ -62,7 +68,7 @@ class IrenesBot(commands.Bot):
     async def __aenter__(self) -> Self:
         return self
 
-    # todo: remove 3.0
+    # TODO: remove 3.0
     async def __aexit__(self, *_: Any) -> None:
         return
 
@@ -106,11 +112,13 @@ class IrenesBot(commands.Bot):
         for ext in EXTENSIONS:
             self.load_module(ext)
 
-        await super().start()
-        # await asyncio.gather(
-        #     super().start(),
-        #     self.dota.login(),
-        # )
+        if "ext.dota_tracker" in EXTENSIONS:
+            await asyncio.gather(
+                super().start(),
+                self.dota.login(),
+            )
+        else:
+            await super().start()
 
     @override
     async def close(self) -> None:

@@ -16,8 +16,11 @@ if TYPE_CHECKING:
 
 
 class Meta(IrenesCog):
+    """Meta features."""
+
     @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_ready(self) -> None:
+        """Announce that bot is successfully reloaded/restarted."""
         # await self.bot.join_channels(["Irene_Adler__"]) # not needed
         if platform.system() != "Windows":
             await self.irene_channel().send(f"{const.STV.hi} the bot is reloaded.")
@@ -25,6 +28,10 @@ class Meta(IrenesCog):
     @checks.is_irene()
     @commands.command()
     async def channel_add(self, ctx: commands.Context, channel: twitchio.Channel) -> None:
+        """Make the bot join @channel.
+
+        Its commands and functionality should become available there.
+        """
         query = """
             INSERT INTO joined_streamers
             (user_id, user_name)
@@ -37,6 +44,10 @@ class Meta(IrenesCog):
     @checks.is_irene()
     @commands.command()
     async def channel_del(self, ctx: commands.Context, channel: twitchio.Channel) -> None:
+        """Remove the bot from @channel.
+
+        The bot should leave their chat and stop responding to commands.
+        """
         query = """
             DELETE FROM joined_streamers
             WHERE user_id=$1
@@ -47,4 +58,5 @@ class Meta(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(Meta(bot))

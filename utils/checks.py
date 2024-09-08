@@ -6,6 +6,8 @@ from utils import const
 
 
 def is_mod() -> Callable[[commands.Command], commands.Command]:
+    """Only allow moderators to use the command."""
+
     async def pred(ctx: commands.Context) -> bool:
         author = ctx.message.author
         # if isinstance(author, twitchio.PartialChatter):
@@ -24,6 +26,8 @@ def is_mod() -> Callable[[commands.Command], commands.Command]:
 
 
 def is_irene() -> Callable[[commands.Command], commands.Command]:
+    """Only allow Irene to use the command."""
+
     async def pred(ctx: commands.Context) -> bool:
         if (await ctx.message.author.user()).id == const.ID.Irene:
             return True

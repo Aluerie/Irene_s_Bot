@@ -6,15 +6,21 @@ ERROR_ROLE_MENTION = "<@&1116171071528374394>"
 
 
 class ID(IntEnum):
+    """Known/special user IDs."""
+
     Irene = 180499648
     Bot = 519438249
 
 
 class Name(StrEnum):
+    """Known/special user names."""
+
     Irene = "irene_adler__"
 
 
 class DisplayName(StrEnum):
+    """Known/special user display names."""
+
     Irene = "Irene_Adler__"
 
 
@@ -87,6 +93,7 @@ class STV(StrEnum):
     hi = "hi"
     How2Read = "How2Read"
     Offline = "Offline"
+    peepoAd = "peepoAd"
     peepoDapper = "peepoDapper"
     Plink = "Plink"
     PogChampPepe = "PogChampPepe"

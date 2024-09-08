@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class Timers(IrenesCog):
+    """Periodic messages/announcements in Irene's channel."""
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
 
@@ -39,6 +41,7 @@ class Timers(IrenesCog):
 
     @irenes_routine(iterations=1)
     async def check_stream_online(self) -> None:
+        """Check if the stream is live on bot's reboot."""
         stream = next(iter(await self.bot.fetch_streams(user_ids=[const.ID.Irene])), None)  # None if offline
         if stream:
             self.timer_task.start()

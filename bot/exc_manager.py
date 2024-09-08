@@ -73,7 +73,6 @@ class ExceptionManager:
 
         It is not recommended to call this yourself, call `register_error` instead.
         """
-
         if platform.system() == "Windows":
             return
 

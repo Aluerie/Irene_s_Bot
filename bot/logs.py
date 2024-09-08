@@ -25,6 +25,7 @@ ASCII_STARTING_UP_ART = r"""
 
 @contextmanager
 def setup_logging() -> Generator[Any, Any, Any]:
+    """Setup logging."""
     log = logging.getLogger()
     log.setLevel(logging.INFO)
 

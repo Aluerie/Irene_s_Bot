@@ -20,6 +20,7 @@ else:
 
 
 async def start_the_bot() -> None:
+    """Start the bot."""
     log = logging.getLogger()
     try:
         pool = await create_pool()

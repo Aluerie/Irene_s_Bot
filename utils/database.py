@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 
 
 async def create_pool() -> asyncpg.Pool[asyncpg.Record]:
+    """Create AsyncPG Pool."""
     return await asyncpg.create_pool(
         POSTGRES_URL,
         command_timeout=60,

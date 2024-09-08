@@ -4,7 +4,7 @@
 twitchio[speed] @ git+https://github.com/TwitchIO/TwitchIO.git
 
 # DISCORD
-discord.py
+discord.py[speed]
 
 # BOT'S BASE
 asyncpg

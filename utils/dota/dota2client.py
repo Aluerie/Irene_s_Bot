@@ -23,6 +23,11 @@ __all__ = ("Dota2Client",)
 
 
 class Dota2Client(Client):
+    """Subclass for SteamIO's Client.
+
+    Used to communicate with Dota 2 Game Coordinator in order to track information about my profile real-time.
+    """
+
     def __init__(self, twitch_bot: IrenesBot) -> None:
         super().__init__(state=PersonaState.Invisible)
         self.twitch_bot: IrenesBot = twitch_bot

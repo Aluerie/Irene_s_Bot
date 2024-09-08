@@ -14,6 +14,11 @@ if TYPE_CHECKING:
 
 
 class ChannelManagement(IrenesCog):
+    """Channel Management commands.
+
+    Such as change Game or Title.
+    """
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.game_tracked: str = "idk"
@@ -27,6 +32,13 @@ class ChannelManagement(IrenesCog):
 
     @irenes_routine(iterations=1)
     async def start_tracking(self) -> None:
+        """Start tracking my channel info.
+
+        Unfortunately, twitch eventSub payloads for channel update events do not have before/after and
+        do not say what exactly changed, they just send new stuff in.
+
+        This is why we need to track the past ourselves.
+        """
         channel_info = await self.bot.fetch_channel(const.Name.Irene)
 
         self.game_tracked = channel_info.game_name
@@ -35,7 +47,6 @@ class ChannelManagement(IrenesCog):
     @commands.command()
     async def game(self, ctx: commands.Context, *, game_name: str | None = None) -> None:
         """Either get current channel game or update it."""
-
         streamer = await ctx.channel.user()
 
         if not game_name:
@@ -78,7 +89,6 @@ class ChannelManagement(IrenesCog):
     @commands.command()
     async def title(self, ctx: commands.Context, *, title: str | None = None) -> None:
         """Either get current channel title or update it."""
-
         streamer = await ctx.channel.user()
 
         if not title:
@@ -121,4 +131,5 @@ class ChannelManagement(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(ChannelManagement(bot))

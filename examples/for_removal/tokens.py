@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import aiohttp
 
-# todo: if we actually need those then move them into IrenesBot namespace
+# TODO: if we actually need those then move them into IrenesBot namespace
 
 
 async def refresh_access_token(refresh_token: str, client_id: str, secret: str) -> None:
+    """Refresh access token."""
     params = {
         "client_id": client_id,
         "client_secret": secret,
@@ -21,6 +22,7 @@ async def refresh_access_token(refresh_token: str, client_id: str, secret: str) 
 
 
 async def verify_token(token: str) -> bool:
+    """Verify token."""
     headers = {"Authorization": "Bearer " + token}
     async with (
         aiohttp.ClientSession() as session,
@@ -31,6 +33,7 @@ async def verify_token(token: str) -> bool:
 
 
 async def validate(access_token: str) -> None:
+    """Validate."""
     valid = await verify_token(access_token)
     if valid:
         print("Access token is valid.")

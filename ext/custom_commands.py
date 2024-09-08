@@ -14,12 +14,20 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
     class TwitchCommands(TypedDict):
+        """`chat_commands` Table Structure."""
+
         streamer_id: int
         command_name: str
         content: str
 
 
 class CustomCommands(IrenesCog):
+    """Custom commands.
+
+    Commands that are managed on the fly.
+    The information is contained within the database and cache.
+    """
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.command_cache: dict[int, dict[str, str]] = {}
@@ -27,6 +35,7 @@ class CustomCommands(IrenesCog):
 
     @routines.routine(iterations=1)
     async def populate_cache(self) -> None:
+        """Populate custom commands cache."""
         query = """
             SELECT streamer_id, command_name, content
             FROM chat_commands
@@ -38,9 +47,15 @@ class CustomCommands(IrenesCog):
 
     @commands.Cog.event()  # type: ignore # one day they will fix it
     async def event_message(self, message: twitchio.Message) -> None:
+        """Listen to prefix custom commands.
+
+        This is a bit different from twitchio commands. This one is just for this cog.
+        """
         # An event inside a cog!
         if message.echo:
             return
+
+        # TODO: look how twitchio does this, maybe they are more efficient.
 
         user = await message.channel.user()
         for k, p in itertools.product(self.command_cache.get(user.id, []), self.bot.prefixes):
@@ -48,6 +63,7 @@ class CustomCommands(IrenesCog):
                 await message.channel.send(self.command_cache[user.id][k])
 
     async def cmd_group(self, ctx: commands.Context) -> None:
+        """Callback for custom command management group "cmd"."""
         await ctx.send("Sorry, you should use it with subcommands add, del, edit")
 
     # todo: do it with @commands.group when they bring it back
@@ -56,6 +72,7 @@ class CustomCommands(IrenesCog):
     @checks.is_mod()
     @cmd.command()
     async def add(self, ctx: commands.Context, cmd_name: str, *, text: str) -> None:
+        """Add custom command."""
         query = """
             INSERT INTO chat_commands
             (streamer_id, command_name, content)
@@ -73,6 +90,7 @@ class CustomCommands(IrenesCog):
     @checks.is_mod()
     @cmd.command(name="del")
     async def delete(self, ctx: commands.Context, command_name: str) -> None:
+        """Delete custom command by name."""
         query = """
             DELETE FROM chat_commands
             WHERE streamer_id=$1 AND command_name=$2
@@ -89,6 +107,7 @@ class CustomCommands(IrenesCog):
     @checks.is_mod()
     @cmd.command()
     async def edit(self, ctx: commands.Context, command_name: str, *, text: str) -> None:
+        """Edit custom command."""
         query = """
             UPDATE chat_commands
             SET content=$3
@@ -106,6 +125,7 @@ class CustomCommands(IrenesCog):
 
     @cmd.command(name="list")
     async def cmd_list(self, ctx: commands.Context) -> None:
+        """Get commands list."""
         cache_list = [f"!{name}" for v in self.command_cache.values() for name in v]
         bot_cmds = [
             f"!{v.full_name}" for v in self.bot.commands.values() if not v._checks and not isinstance(v, commands.Group)
@@ -114,4 +134,5 @@ class CustomCommands(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(CustomCommands(bot))

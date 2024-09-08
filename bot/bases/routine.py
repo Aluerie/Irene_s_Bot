@@ -65,6 +65,12 @@ def irenes_routine(
     iterations: int | None = None,
     wait_first: bool = False,
 ) -> Callable[..., IrenesRoutine]:
+    """My own routine function.
+
+    The code for the decorator unfortunately had to be completely copy-pasted from twitchio source code.
+    So watch out if they do some changes to it.
+    """
+
     def decorator(coro: Callable[..., Coroutine[Any, Any, Any]]) -> IrenesRoutine:
         time_ = time
 

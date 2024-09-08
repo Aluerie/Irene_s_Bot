@@ -9,17 +9,21 @@ from bot import IrenesCog
 from utils import const
 
 if TYPE_CHECKING:
-    import twitchio
-
     from bot import IrenesBot
 
 
 class UnusedAlerts(IrenesCog):
+    """Unused alerts.
+
+    Most are indeed pointless since they are already handled by native twitch.tv "system"-messages.
+    """
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.bot.loop.create_task(self.subscribe_to_events())
 
     async def subscribe_to_events(self) -> None:
+        """Create eventsub subscriptions."""
         broadcaster = const.ID.Irene
         token = config.TTG_IRENE_ACCESS_TOKEN
 
@@ -33,22 +37,6 @@ class UnusedAlerts(IrenesCog):
         await self.bot.eventsub.subscribe_channel_subscription_messages(broadcaster, token)
         # Subs                                  channel:read:subscriptions
         await self.bot.eventsub.subscribe_channel_subscriptions(broadcaster, token)
-
-    def get_channel(self, partial_user: twitchio.PartialUser) -> twitchio.Channel:
-        assert partial_user.name
-        channel = self.bot.get_channel(partial_user.name)
-        assert channel
-        return channel
-
-    async def get_display_name(self, partial_user: twitchio.PartialUser | None, channel: twitchio.Channel) -> str:
-        if partial_user and partial_user.name:  # q: v3 type check | can payload.user.name be None?
-            chatter = channel.get_chatter(partial_user.name)
-            display_name: str | None = getattr(chatter, "mention", None)
-            if not display_name:
-                display_name = (await partial_user.fetch()).display_name
-        else:
-            display_name = "Anonymous"
-        return display_name
 
     @commands.Cog.event(event="event_eventsub_notification_channel_charity_donate")  # type: ignore # lib issue
     async def charity_donate(self, event: eventsub.NotificationEvent) -> None:
@@ -101,4 +89,5 @@ class UnusedAlerts(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(UnusedAlerts(bot))

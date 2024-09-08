@@ -14,11 +14,18 @@ if TYPE_CHECKING:
 
 
 class EmoteChecker(IrenesCog):
+    """Check if emotes from 3rd party services like 7TV, FFZ, BTTV are valid.
+
+    Usable in case I remove an emote that is used in bot's responses.
+    Bot will notify me that emote was used so I can make adjustments.
+    """
+
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.check_emotes.start()
 
     async def send_error_embed(self, emote: str, service: str, colour: int) -> None:
+        """Helper function to send a ping to Irene that something is wrong with emote services."""
         content = const.ERROR_ROLE_MENTION
         embed = Embed(
             title=f"Problem with {service} emotes",
@@ -28,12 +35,14 @@ class EmoteChecker(IrenesCog):
         await self.bot.exc_manager.error_webhook.send(content=content, embed=embed)
 
     async def cross_check_emotes(self, api_emotes: list[str], bot_emotes: type[StrEnum], colour: int) -> None:
+        """Cross check between emote list in `utils.const` and list from 3rd party emote service API."""
         for emote in bot_emotes:
             if emote not in api_emotes:
                 await self.send_error_embed(emote, bot_emotes.__class__.__name__, colour)
 
     @irenes_routine(hours=23, minutes=59, wait_first=True)
     async def check_emotes(self) -> None:
+        """The task to check emotes."""
         # SEVEN TV
         async with self.bot.session.get(f"https://7tv.io/v3/users/twitch/{const.ID.Irene}") as resp:
             stv_json = await resp.json()
@@ -54,4 +63,5 @@ class EmoteChecker(IrenesCog):
 
 
 def prepare(bot: IrenesBot) -> None:
+    """Load IrenesBot extension. Framework of twitchio."""
     bot.add_cog(EmoteChecker(bot))
