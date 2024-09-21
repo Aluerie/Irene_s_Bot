@@ -130,8 +130,12 @@ class Alerts(IrenesCog):
         """Ad break."""
         payload: eventsub.ChannelAdBreakBeginData = event.data  # type: ignore
         channel = self.get_channel(payload.broadcaster)
-        word = "automatic" if payload.is_automatic else "manual"
-        await channel.send(f"{payload.duration} secs {word} ad break is starting {const.STV.peepoAd}")
+        # word = "automatic" if payload.is_automatic else "manual"
+        await channel.send(f"{payload.duration}s ad starting {const.STV.peepoAd}")
+
+        # this is pointless probably
+        # await asyncio.sleep(payload.duration)
+        # await channel.send("TAd break is over")
 
     @commands.Cog.event(event="event_eventsub_notification_ban")  # type: ignore # lib issue
     async def bans_timeouts(self, event: eventsub.NotificationEvent) -> None:
