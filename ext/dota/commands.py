@@ -274,6 +274,7 @@ class DotaCommands(IrenesCog):
     @clean_up_the_database.before_loop
     @check_streamers_rich_presence.before_loop
     async def before_check_streamers_rich_presence(self) -> None:
+        """Wait for the IrenesBot, Dota Client and Game Coordinator ready-s."""
         await self.bot.wait_for_ready()
         await self.bot.dota.wait_until_ready()
         await self.bot.dota.wait_until_gc_ready()
