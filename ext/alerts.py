@@ -42,6 +42,7 @@ class Alerts(IrenesCog):
     async def channel_points_redeem(self, event: eventsub.NotificationEvent) -> None:
         """Somebody redeemed a custom channel points reward."""
         payload: eventsub.CustomRewardRedemptionAddUpdateData = event.data  # type: ignore
+        # just testing
         print(f"{payload.user.name} redeemed {payload.reward.title} for {payload.reward.cost} channel points")
 
     # SECTION 2

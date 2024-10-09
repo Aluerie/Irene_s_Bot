@@ -43,7 +43,7 @@ class Counters(IrenesCog):
             return
 
         query = """--sql
-            UPDATE counters
+            UPDATE ttv_counters
             SET value = value + 1
             where name = $1
             RETURNING value;
@@ -59,7 +59,7 @@ class Counters(IrenesCog):
         now = datetime.datetime.now(datetime.UTC)
         if random.randint(0, 150) < 2 and (now - self.last_erm_notification).seconds > 180:
             await asyncio.sleep(3)
-            query = "SELECT value FROM counters WHERE name = $1"
+            query = "SELECT value FROM ttv_counters WHERE name = $1"
             value: int = await self.bot.pool.fetchval(query, "erm")
             await message.channel.send(f"{value} {const.STV.Erm} in chat.")
             return
@@ -67,7 +67,7 @@ class Counters(IrenesCog):
     @commands.command(aliases=["erm"])
     async def erms(self, ctx: commands.Context) -> None:
         """Get an erm_counter value."""
-        query = "SELECT value FROM counters WHERE name = $1"
+        query = "SELECT value FROM ttv_counters WHERE name = $1"
         value: int = await self.bot.pool.fetchval(query, "erm")
         await ctx.send(f"{value} {const.STV.Erm} in chat.")
 
@@ -85,14 +85,13 @@ class Counters(IrenesCog):
             return
 
         query = """--sql
-            INSERT INTO first_redeems (user_id, user_name)
+            INSERT INTO ttv_first_redeems (user_id, user_name)
             VALUES ($1, $2)
             ON CONFLICT (user_id) DO
                 UPDATE SET first_times = first_redeems.first_times + 1, user_name = $2
             RETURNING first_times;
         """
         count: int = await self.bot.pool.fetchval(query, payload.user.id, str(payload.user.name))
-        print(count)
         channel = self.get_channel(payload.broadcaster)
         user_display_name = await self.get_display_name(payload.user, channel)
 
@@ -107,7 +106,7 @@ class Counters(IrenesCog):
         """Get top10 first redeemers."""
         query = """--sql
             SELECT user_name, first_times
-            FROM first_redeems
+            FROM ttv_first_redeems
             ORDER BY first_times DESC
             LIMIT 3;
         """

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING
 
 from discord import Embed
 
-from bot import IrenesCog, irenes_routine
+from bot import IrenesCog, irenes_loop
 from utils import const
 
 if TYPE_CHECKING:
@@ -40,9 +41,13 @@ class EmoteChecker(IrenesCog):
             if emote not in api_emotes:
                 await self.send_error_embed(emote, bot_emotes.__class__.__name__, colour)
 
-    @irenes_routine(hours=23, minutes=59, wait_first=True)
+    @irenes_loop(time=[datetime.time(hour=5, minute=59)])
     async def check_emotes(self) -> None:
         """The task to check emotes."""
+        if datetime.datetime.now(datetime.UTC).weekday() != 5:
+            # simple way to make a task run once/week
+            return
+
         # SEVEN TV
         async with self.bot.session.get(f"https://7tv.io/v3/users/twitch/{const.ID.Irene}") as resp:
             stv_json = await resp.json()

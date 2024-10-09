@@ -1,11 +1,17 @@
-import logging
+from __future__ import annotations
 
-import twitchio
+import logging
+from typing import TYPE_CHECKING
+
 from twitchio.ext import commands
 
 from utils import const
 
-from ..bot import IrenesBot
+if TYPE_CHECKING:
+    import twitchio
+
+    from ..bot import IrenesBot
+
 
 __all__ = ("IrenesCog",)
 

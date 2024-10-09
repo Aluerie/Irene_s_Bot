@@ -29,3 +29,47 @@ class CheckError(IrenesBotError):
     """
 
     __slots__: tuple[str, ...] = ()
+
+
+class UsageError(IrenesBotError):
+    """Something wasn't properly used"""
+
+    __slots__: tuple[str, ...] = ()
+
+
+class SomethingWentWrong(IrenesBotError):  # noqa N818
+    __slots__: tuple[str, ...] = ()
+
+
+class PlaceholderRaiseError(IrenesBotError):
+    """Placeholder Error.
+
+    Maybe silly thing, but instead of doing empty `raise` that is not clear later in logs what exactly it is
+    I prefer raising my own placeholder error with a message.
+    This is usually used in a code where I'm unsure what to do and how else to handle the situation.
+    """
+
+    __slots__: tuple[str, ...] = ()
+
+
+class GameNotFoundError(IrenesBotError):
+    """Dota 2 Game Not Found."""
+
+    __slots__: tuple[str, ...] = ()
+
+
+class APIResponseError(IrenesBotError):
+    """API Response Error."""
+
+    __slots__: tuple[str, ...] = ()
+
+
+class ResponseNotOK(IrenesBotError):  # noqa: N818
+    """Raised when `aiohttp`'s session response is not OK.
+
+    Sometimes we just specifically need to raise an error in those cases
+    when response from `self.bot.session.get(url)` is not OK.
+    I.e. Cache Updates.
+    """
+
+    __slots__: tuple[str, ...] = ()

@@ -37,7 +37,7 @@ async def start_the_bot() -> None:
     #         secret=config.TWITCH_CLIENT_SECRET,
     #     )
 
-    query = "SELECT user_name FROM joined_streamers"
+    query = "SELECT user_name FROM ttv_joined_streamers"
     initial_channels: list[str] = [str(user_name) for (user_name,) in await pool.fetch(query)]
 
     async with (

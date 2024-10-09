@@ -33,7 +33,7 @@ class Meta(IrenesCog):
         Its commands and functionality should become available there.
         """
         query = """
-            INSERT INTO joined_streamers
+            INSERT INTO ttv_joined_streamers
             (user_id, user_name)
             VALUES ($1, $2)
         """

@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import twitchio
-from twitchio.ext import commands, routines
+from twitchio.ext import commands
 
 import config
-from bot import IrenesCog, irenes_routine
+from bot import IrenesCog, irenes_loop
 from utils import const
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class BetaCog(IrenesCog):
         super().__init__(bot)
         self.beta_test.start()
 
-    @routines.routine(iterations=1)
+    @irenes_loop(count=1)
     async def beta_test(self) -> None:
         """Task that is supposed to run just once to test stuff out."""
         ...

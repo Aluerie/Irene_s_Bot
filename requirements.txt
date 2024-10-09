@@ -13,6 +13,7 @@ aiohttp==3.9.5
 
 # DOTA 2 
 steamio @ git+https://github.com/Aluerie/steam.py@introduce-ext.dota2
+pulsefire
 
 # OPTIMISATION
 orjson
@@ -21,4 +22,6 @@ uvloop; platform_system == 'Linux'  # ignore on non-Linux - because not availabl
 # JUPYTER NOTEBOOKS
 ipykernel; platform_system == 'Windows'
 
+# UNCATEGORIZED YET
 click
+thefuzz

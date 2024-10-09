@@ -37,7 +37,7 @@ class plural:  # noqa: N801
         return f"{number} {singular}"
 
 
-def timedelta_to_words(delta: datetime.timedelta) -> str:
+def timedelta_to_words(delta: datetime.timedelta, *, accuracy: int = 2, full_words: bool = True) -> str:
     """Convert `datetime.timedelta` to a string of humanly readable words.
 
     Example:
@@ -51,6 +51,25 @@ def timedelta_to_words(delta: datetime.timedelta) -> str:
 
     minutes, seconds = divmod(total_seconds, 60)
     hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
 
-    timeunit_dict = {"hour": hours, "minute": minutes, "second": seconds}
-    return " ".join(format(plural(number), word) for word, number in timeunit_dict.items() if number)
+    if full_words:
+        timeunit_dict = {"days": days, "hour": hours, "minute": minutes, "second": seconds}
+        output = [format(plural(number), word) for word, number in timeunit_dict.items() if number]
+        return " ".join(output[:accuracy])
+    else:
+        timeunit_dict = {"d": days, "h": hours, "m": minutes, "s": seconds}
+        output = [f"{number}{letter}" for letter, number in timeunit_dict.items() if number]
+        return "".join(output[:accuracy])
+
+
+def ordinal(n: int | str) -> str:
+    """Convert an integer into its ordinal representation, i.e. 0->'0th', '3'->'3rd'."""
+    # Remember that there is always funny lambda possibility
+    # ```py
+    # ordinal = lambda n: "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10::4])
+    # print([ordinal(n) for n in range(1,32)])
+    # ```
+    n = int(n)
+    suffix = "th" if 11 <= n % 100 <= 13 else ["th", "st", "nd", "rd", "th"][min(n % 10, 4)]
+    return str(n) + suffix

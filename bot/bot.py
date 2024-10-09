@@ -8,7 +8,8 @@ import discord
 from twitchio.ext import commands, eventsub
 
 from core import CORE_EXTENSIONS
-from ext import EXTENSIONS
+from ext import WORK_EXTENSIONS
+from utils import errors
 from utils.dota import Dota2Client
 
 from .exc_manager import ExceptionManager
@@ -80,6 +81,8 @@ class IrenesBot(commands.Bot):
     @override
     async def event_command_error(self, ctx: commands.Context, error: Exception) -> None:
         match error:
+            case errors.IrenesBotError():
+                await ctx.send(str(error))
             case commands.BadArgument():
                 log.warning(error.message)
                 await ctx.send(f"Couldn't find any {error.name} like that")
@@ -109,10 +112,10 @@ class IrenesBot(commands.Bot):
     async def start(self) -> None:
         for ext in CORE_EXTENSIONS:
             self.load_module(ext)
-        for ext in EXTENSIONS:
+        for ext in WORK_EXTENSIONS:
             self.load_module(ext)
 
-        if "ext.dota_tracker" in EXTENSIONS:
+        if "ext.dota" in WORK_EXTENSIONS:
             await asyncio.gather(
                 super().start(),
                 self.dota.login(),
@@ -120,10 +123,40 @@ class IrenesBot(commands.Bot):
         else:
             await super().start()
 
+    async def instantiate_steam_web_api(self) -> None:
+        """Initialize Steam Web API client."""
+        if not hasattr(self, "steam_web_api"):
+            from utils.dota import SteamWebAPIClient
+
+            self.steam_web_api = SteamWebAPIClient()
+            await self.steam_web_api.__aenter__()
+
+    async def instantiate_opendota(self) -> None:
+        """Initialize OpenDota client."""
+        if not hasattr(self, "opendota"):
+            from utils.dota import OpenDotaClient
+
+            self.opendota = OpenDotaClient()
+            await self.opendota.__aenter__()
+
+    async def instantiate_cache_dota(self) -> None:
+        """Initialize OpenDota client."""
+        if not hasattr(self, "cache_dota"):
+            from utils.dota import DotaKeyCache
+
+            self.cache_dota = DotaKeyCache(self)
+
     @override
     async def close(self) -> None:
         await self.dota.close()
         await super().close()
+
+        for client in (
+            "steam_web_api",
+            "opendota",
+        ):
+            if hasattr(self, client):
+                await getattr(self, client).__aexit__()
 
     def webhook_from_url(self, url: str) -> discord.Webhook:
         """A shortcut function with filled in discord.Webhook.from_url args."""

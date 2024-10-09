@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from twitchio.ext import commands, eventsub
 
-from bot import IrenesCog, irenes_routine
+from bot import IrenesCog, irenes_loop
 from utils import const
 
 if TYPE_CHECKING:
@@ -33,13 +33,17 @@ class Timers(IrenesCog):
             f"{const.STV.Plink}",
             f"{const.STV.uuh}",
             f"chat don't forget to {const.STV.Plink}",
+            (
+                "hi chat many features of this bot are WIP so, please, if you notice bugs or incorrect responses "
+                f"- inform me {const.STV.DANKHACKERMANS}"
+            ),
             # "Discord discord.gg/K8FuDeP",
             # "if you have nothing to do Sadge you can try !randompasta. Maybe you'll like it Okayge",
         ]
         self.lines_count: int = 0
         self.check_stream_online.start()
 
-    @irenes_routine(iterations=1)
+    @irenes_loop(count=1)
     async def check_stream_online(self) -> None:
         """Check if the stream is live on bot's reboot."""
         stream = next(iter(await self.bot.fetch_streams(user_ids=[const.ID.Irene])), None)  # None if offline
@@ -67,7 +71,7 @@ class Timers(IrenesCog):
 
         self.lines_count += 1
 
-    @irenes_routine(iterations=1)
+    @irenes_loop(count=1)
     async def timer_task(self) -> None:
         """Task to send periodic messages into irene's channel on timer."""
         await asyncio.sleep(10 * 60)
@@ -85,6 +89,10 @@ class Timers(IrenesCog):
             await irene_channel.send(text)
             minutes_to_sleep = 69 + random.randint(1, 21)
             await asyncio.sleep(minutes_to_sleep * 60)
+
+    @timer_task.before_loop
+    async def timer_task_before_loop(self) -> None:
+        await self.bot.wait_for_ready()
 
 
 def prepare(bot: IrenesBot) -> None:

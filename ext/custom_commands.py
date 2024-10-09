@@ -38,9 +38,8 @@ class CustomCommands(IrenesCog):
         """Populate custom commands cache."""
         query = """
             SELECT streamer_id, command_name, content
-            FROM chat_commands
+            FROM ttv_chat_commands
         """
-
         rows: list[TwitchCommands] = await self.bot.pool.fetch(query)
         for row in rows:
             self.command_cache.setdefault(row["streamer_id"], {})[row["command_name"]] = row["content"]
@@ -74,7 +73,7 @@ class CustomCommands(IrenesCog):
     async def add(self, ctx: commands.Context, cmd_name: str, *, text: str) -> None:
         """Add custom command."""
         query = """
-            INSERT INTO chat_commands
+            INSERT INTO ttv_chat_commands
             (streamer_id, command_name, content)
             VALUES ($1, $2, $3)
         """
@@ -92,7 +91,7 @@ class CustomCommands(IrenesCog):
     async def delete(self, ctx: commands.Context, command_name: str) -> None:
         """Delete custom command by name."""
         query = """
-            DELETE FROM chat_commands
+            DELETE FROM ttv_chat_commands
             WHERE streamer_id=$1 AND command_name=$2
             RETURNING command_name
         """
@@ -109,7 +108,7 @@ class CustomCommands(IrenesCog):
     async def edit(self, ctx: commands.Context, command_name: str, *, text: str) -> None:
         """Edit custom command."""
         query = """
-            UPDATE chat_commands
+            UPDATE ttv_chat_commands
             SET content=$3
             WHERE streamer_id=$1 AND command_name=$2
             RETURNING command_name

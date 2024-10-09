@@ -17,3 +17,4 @@ config.py
 
 ext/_beta.py
 ext/beta.py
+_test.py

@@ -56,6 +56,7 @@ class FFZ(StrEnum):
     peepoPolice = "peepoPolice"
     peepoWTF = "peepoWTF"
     sadKEK = "sadKEK"
+    WTFF = "WTFF"
 
 
 class STV(StrEnum):
@@ -69,6 +70,7 @@ class STV(StrEnum):
     DankL = "DankL"
     DankMods = "DankMods"
     DankDolmes = "DankDolmes"
+    DANKHACKERMANS = "DANKHACKERMANS"
     DankG = "DankG"
     DankLurk = "DankLurk"
     DankReading = "DankReading"
@@ -100,6 +102,7 @@ class STV(StrEnum):
     POGCRAZY = "POGCRAZY"
     yo = "yo"
     uuh = "uuh"
+    wickedchad = "wickedchad"
     widepeepoHappyRightHeart = "widepeepoHappyRightHeart"
     wow = "wow"
 

@@ -38,8 +38,6 @@ class Dota2Client(Client):
 
     @override
     async def on_ready(self) -> None:
-        log.info("Successfully logged into Steam: %s", self.user.name)
-
-        irene = await self.fetch_user(76561198072901893)  # todo: put steam id into config/const
-        print(irene)
-        print(irene.rich_presence)
+        log.info("Dota 2 Client: Ready - Successfully %s", self.user.name)
+        await self.wait_until_gc_ready()
+        log.info("Dota 2 Game Coordinator: Ready")

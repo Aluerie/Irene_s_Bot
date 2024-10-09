@@ -6,8 +6,12 @@ from examples.beta.base import *
 
 
 class BetaTest(BetaCog):
-    @routines.routine(iterations=1)
+    @irenes_loop(count=1)
     async def beta_test(self) -> None:
+        pass
+
+    @commands.command()
+    async def beta(self, ctx: commands.Context) -> None:
         pass
 
 
