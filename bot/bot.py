@@ -105,7 +105,7 @@ class IrenesBot(commands.Bot):
 
     @override
     async def event_error(self, error: Exception, data: str | None = None) -> None:
-        embed = discord.Embed(description=f"Exception {error.__class__.__name__} in event: {data}")
+        embed = discord.Embed(description=f"Exception {error.__class__.__name__} in event, data={data}")
         await self.exc_manager.register_error(error, embed=embed)
 
     @override

@@ -53,7 +53,7 @@ class Development(IrenesCog):
         await asyncio.sleep(3)
         try:
             # non systemctl users - sorry
-            os.system("sudo systemctl stop luebyt")
+            os.system("sudo systemctl stop irenesbot")
         except Exception as error:
             log.error(error, stack_info=True)
             # it might not go off
@@ -71,7 +71,7 @@ class Development(IrenesCog):
         await asyncio.sleep(3)
         try:
             # non systemctl users - sorry
-            os.system("sudo systemctl restart luebyt")
+            os.system("sudo systemctl restart irenesbot")
         except Exception as error:
             log.error(error, stack_info=True)
             # it might not go off

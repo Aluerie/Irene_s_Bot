@@ -9,7 +9,7 @@ from twitchio.ext import commands, eventsub
 
 import config
 from bot import IrenesCog
-from utils import const
+from utils import const, formats
 
 if TYPE_CHECKING:
     import twitchio
@@ -132,7 +132,8 @@ class Alerts(IrenesCog):
         payload: eventsub.ChannelAdBreakBeginData = event.data  # type: ignore
         channel = self.get_channel(payload.broadcaster)
         # word = "automatic" if payload.is_automatic else "manual"
-        await channel.send(f"{payload.duration}s ad starting {const.STV.peepoAd}")
+        human_delta = formats.timedelta_to_words(seconds=payload.duration, fmt=formats.TimeDeltaFormat.Short)
+        await channel.send(f"{human_delta} ad starting {const.STV.peepoAd}")
 
         # this is pointless probably
         # await asyncio.sleep(payload.duration)

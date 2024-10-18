@@ -88,7 +88,7 @@ class Counters(IrenesCog):
             INSERT INTO ttv_first_redeems (user_id, user_name)
             VALUES ($1, $2)
             ON CONFLICT (user_id) DO
-                UPDATE SET first_times = first_redeems.first_times + 1, user_name = $2
+                UPDATE SET first_times = ttv_first_redeems.first_times + 1, user_name = $2
             RETURNING first_times;
         """
         count: int = await self.bot.pool.fetchval(query, payload.user.id, str(payload.user.name))

@@ -389,7 +389,7 @@ class LastGame:
         link = self.opendota if self.lobby_type == LobbyType.NewPlayerMode else self.stratz
         return (
             f"Last Game - {game_type}: {outcome} as {self.hero.name} {self.kda} "
-            f"\N{MIDDLE DOT} ended {formats.timedelta_to_words(delta, full_words=False)} ago "
+            f"\N{MIDDLE DOT} ended {formats.timedelta_to_words(delta, fmt=formats.TimeDeltaFormat.Letter)} ago "
             f"\N{MIDDLE DOT} {link}"
         )
 
