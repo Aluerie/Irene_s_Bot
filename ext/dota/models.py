@@ -72,7 +72,7 @@ class Streamer:
         return self.play_match or self.watch_match
 
     def reset(self, event_msg: str, *, unsupported_error: str = "") -> None:
-        log.debug("Resetting streamer state to play_match=`None` and etc.")
+        log.debug("Resetting streamer state to play_match=`None`: %s", event_msg)
         if p := self.play_match:
             p.reset()
             self.bot.run_event("reset_streamer", event_msg)
@@ -108,7 +108,7 @@ class Streamer:
             if self.rp_status != rp_status:
                 self.rp_status = rp_status
                 self.reset("Streamer went Offline")
-                self.bot.run_event("rich_presence_changed", self.rp_status)
+                self.bot.run_event("rich_presence_changed", self.rp_status.display_name)
             return
 
         # this will bite me back one day, but "param1" is a hero level

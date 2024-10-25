@@ -27,6 +27,9 @@ class DisplayName(StrEnum):
 class Global(StrEnum):
     """Global emotes that are usable everywhere."""
 
+    # Twitch Native ones
+    D4Head = "4Head"  # idk let's think better name?
+
     # BTTV
     monkaS = "monkaS"
 

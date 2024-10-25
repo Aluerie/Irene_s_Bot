@@ -30,8 +30,8 @@ class DefaultCommands(IrenesCog):
     @commands.command()
     async def erdoc(self, ctx: commands.Context) -> None:
         """Link to my Elden Ring notes."""
-        await ctx.send(
-            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?tab=t.jwz78x67d9qs"
+        await ctx.send(  # cspell: disable-next-line
+            "docs.google.com/document/d/19vTJVS7k1zdmShOAcO41KBWepfybMsTprQ208O7HpLU/edit?tab=t.0"
         )
 
     @commands.command()
@@ -39,7 +39,7 @@ class DefaultCommands(IrenesCog):
         """Explanation of my first Sekiro hitless run."""
         msg = (
             "All Bosses & MiniBosses, charmless. For details about routing/plan/strategies look !sekirodoc: "
-            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?tab=t.0 "  # cSpell: ignore vwwl
+            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?tab=t.0 "  # cspell: disable-line
             "It's my first ever hitless run, so there is a lot to learn & grind."
         )
         await ctx.send(msg)
@@ -47,7 +47,9 @@ class DefaultCommands(IrenesCog):
     @commands.command()
     async def sekirodoc(self, ctx: commands.Context) -> None:
         """Link to my Sekiro notes."""
-        await ctx.send("docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?tab=t.0")
+        await ctx.send(  # cspell: disable-next-line
+            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?tab=t.0"
+        )
 
     # 2. MORE OR LESS STABLE COMMANDS
     # (sorted alphabetically)
