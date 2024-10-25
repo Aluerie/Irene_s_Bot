@@ -58,6 +58,7 @@ class FFZ(StrEnum):
     monkaH = "monkaH"
     peepoPolice = "peepoPolice"
     peepoWTF = "peepoWTF"
+    PepoG = "PepoG"
     sadKEK = "sadKEK"
     WTFF = "WTFF"
 

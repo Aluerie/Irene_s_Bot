@@ -45,6 +45,11 @@ class Alerts(IrenesCog):
         # just testing
         print(f"{payload.user.name} redeemed {payload.reward.title} for {payload.reward.cost} channel points")
 
+        if payload.user.id == const.ID.Irene and payload.reward.cost < 4:
+            # < 4 is a weird way to only include basic redeems.
+            channel = self.get_channel(payload.broadcaster)
+            await channel.send(f"Hey, Irene, thanks for redeeming, but I think we good {const.FFZ.PepoG}")
+
     # SECTION 2
     # Actual events
 
