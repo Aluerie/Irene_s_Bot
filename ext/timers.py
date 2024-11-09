@@ -30,9 +30,9 @@ class Timers(IrenesCog):
             ),
             f"{const.STV.Adge} {const.STV.DankApprove}",
             f"Don't forget to stretch and scoot {const.STV.GroupScoots}",
-            f"{const.STV.Plink}",
+            f"{const.STV.plink}",
             f"{const.STV.uuh}",
-            f"chat don't forget to {const.STV.Plink}",
+            f"chat don't forget to {const.STV.plink}",
             (
                 "hi chat many features of this bot are WIP so, please, if you notice bugs or incorrect responses "
                 f"- inform me {const.STV.DANKHACKERMANS}"

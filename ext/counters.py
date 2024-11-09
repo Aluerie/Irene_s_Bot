@@ -111,7 +111,7 @@ class Counters(IrenesCog):
             LIMIT 3;
         """
         rows: list[FirstRedeemsRow] = await self.bot.pool.fetch(query)
-        content = f'Top3 "First!" redeemers {const.STV.DankG} '
+        content = f'Top3 "First!" redeemers {const.BTTV.DankG} '
 
         rank_medals = [
             "\N{FIRST PLACE MEDAL}",

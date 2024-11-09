@@ -39,7 +39,7 @@ class EmoteChecker(IrenesCog):
         """Cross check between emote list in `utils.const` and list from 3rd party emote service API."""
         for emote in bot_emotes:
             if emote not in api_emotes:
-                await self.send_error_embed(emote, bot_emotes.__class__.__name__, colour)
+                await self.send_error_embed(emote, bot_emotes.__name__, colour)
 
     @irenes_loop(time=[datetime.time(hour=5, minute=59)])
     async def check_emotes(self) -> None:

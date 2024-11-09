@@ -31,24 +31,24 @@ class DefaultCommands(IrenesCog):
     async def erdoc(self, ctx: commands.Context) -> None:
         """Link to my Elden Ring notes."""
         await ctx.send(  # cspell: disable-next-line
-            "docs.google.com/document/d/19vTJVS7k1zdmShOAcO41KBWepfybMsTprQ208O7HpLU/edit?tab=t.0"
+            "docs.google.com/document/d/19vTJVS7k1zdmShOAcO41KBWepfybMsTprQ208O7HpLU"
         )
 
     @commands.command()
     async def run(self, ctx: commands.Context) -> None:
         """Explanation of my first Sekiro hitless run."""
         msg = (
-            "All Bosses & MiniBosses, charmless. For details about routing/plan/strategies look !sekirodoc: "
-            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?tab=t.0 "  # cspell: disable-line
+            "All Bosses & MiniBosses. For details about routing/plan/strategies look !sekirodoc: "
+            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA "  # cspell: disable-line
             "It's my first ever hitless run, so there is a lot to learn & grind."
         )
         await ctx.send(msg)
 
-    @commands.command()
+    @commands.command(aliases=['sekironotes'])
     async def sekirodoc(self, ctx: commands.Context) -> None:
         """Link to my Sekiro notes."""
         await ctx.send(  # cspell: disable-next-line
-            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA/edit?tab=t.0"
+            "docs.google.com/document/d/1rjp7lhvP0vwwlO7bC7TyFAjKcGDovFuo2EYUaX66QiA"
         )
 
     # 2. MORE OR LESS STABLE COMMANDS
@@ -87,7 +87,7 @@ class DefaultCommands(IrenesCog):
     @commands.command(aliases=["hi", "yo"])
     async def hello(self, ctx: commands.Context) -> None:
         """Hello."""
-        await ctx.send(f"{const.STV.Hello} @{ctx.author.name} {const.STV.yo}")
+        await ctx.send(f"{const.STV.hello} @{ctx.author.name} {const.STV.yo}")
 
     @commands.command()
     async def love(self, ctx: commands.Context, *, arg: str) -> None:

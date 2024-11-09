@@ -48,7 +48,7 @@ class Alerts(IrenesCog):
         if payload.user.id == const.ID.Irene and payload.reward.cost < 4:
             # < 4 is a weird way to only include basic redeems.
             channel = self.get_channel(payload.broadcaster)
-            await channel.send(f"Hey, Irene, thanks for redeeming, but I think we good {const.FFZ.PepoG}")
+            await channel.send(f"Hey, Irene, thanks for redeeming, I think bot is working {const.FFZ.PepoG}")
 
     # SECTION 2
     # Actual events
@@ -166,7 +166,11 @@ class Alerts(IrenesCog):
 
         await asyncio.sleep(3.3)
         if message.author.name.lower() not in self.ban_list:
-            await message.channel.send(const.STV.FirstTimeChadder)
+            content = (
+                f"{const.STV.FirstTimeChadder} or {const.STV.FirstTimeDentge} "
+                f"\N{WHITE QUESTION MARK ORNAMENT} {const.STV.DankThink}"
+            )
+            await message.channel.send(content)
 
 
 def prepare(bot: IrenesBot) -> None:
