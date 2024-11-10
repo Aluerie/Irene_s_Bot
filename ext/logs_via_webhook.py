@@ -5,7 +5,7 @@ import datetime
 import logging
 import platform
 import textwrap
-from typing import TYPE_CHECKING, Any, override
+from typing import TYPE_CHECKING, override
 
 import discord
 from discord.ext import tasks
