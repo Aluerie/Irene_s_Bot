@@ -59,8 +59,8 @@ class LogsViaWebhook(IrenesComponent):
         "twitchio.websocket": const.Logo.Twitch,
     }
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, bot: IrenesBot) -> None:
+        super().__init__(bot)
         self._logging_queue = asyncio.Queue()
 
         # cooldown attrs
@@ -69,11 +69,11 @@ class LogsViaWebhook(IrenesComponent):
         self._most_recent: datetime.datetime | None = None
 
     @override
-    def component_load(self) -> None:
+    async def component_load(self) -> None:
         self.logging_worker.start()
 
     @override
-    def component_teardown(self) -> None:
+    async def component_teardown(self) -> None:
         self.logging_worker.stop()
 
     @discord.utils.cached_property
@@ -122,6 +122,6 @@ async def setup(bot: IrenesBot) -> None:
         return
 
     cog = LogsViaWebhook(bot)
-    await bot.add_component(cog)
+    await bot.add_component(LogsViaWebhook(bot))
     bot.logs_via_webhook_handler = handler = LoggingHandler(cog)
     logging.getLogger().addHandler(handler)
