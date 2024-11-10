@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, TypedDict, override
 from twitchio.ext import commands
 
 import config
-from bot import IrenesCog, irenes_loop
-from utils import checks, const, errors, helpers
+from bot import IrenesComponent, irenes_loop
+from utils import const, errors, helpers
 
 from .models import Streamer
 
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from .models import ActiveMatch
 
     class CheckTwitchRenamesQueryRow(TypedDict):
-        twitch_id: int
+        twitch_id: str
         twitch_name: str
 
 
@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class DotaCommands(IrenesCog):
+class DotaCommands(IrenesComponent):
     """Cog responsible for Dota 2 related commands and statistics tracker.
 
     This functionality is supposed to be an analogy to 9kmmrbot/dotabod features.
@@ -39,13 +39,12 @@ class DotaCommands(IrenesCog):
         self.streamer: Streamer = Streamer(self.bot, config.IRENE_STEAM_ID64)
         self.debug_mode: bool = True
 
-        self.bot.loop.create_task(self.cog_load())
-
     async def debug_send(self, message: str) -> None:
         if self.debug_mode:
-            await self.irene_channel().send(f"[DEBUG] {message}")
+            await self.deliver(f"[DEBUG] {message}")
 
-    async def cog_load(self) -> None:  # TODO: is there no real cog_load ? v3
+    @override
+    async def component_load(self) -> None:
         """Cog load."""
         await self.bot.instantiate_steam_web_api()
         await self.bot.instantiate_cache_dota()
@@ -56,7 +55,7 @@ class DotaCommands(IrenesCog):
         self.check_twitch_accounts_renames.start()
 
     @override
-    async def cog_unload(self) -> None:
+    async def component_teardown(self) -> None:
         self.check_streamers_rich_presence.cancel()
 
     @irenes_loop(hours=48)
@@ -212,7 +211,7 @@ class DotaCommands(IrenesCog):
             response = await self.streamer.mmr_command_response()
         await ctx.send(self.fmt_response(response, False, perf))
 
-    @checks.is_mod()
+    @commands.is_moderator()
     @commands.command(name="setmmr")
     async def set_mmr(self, ctx: commands.Context, mmr: int) -> None:
         async with helpers.measure_time() as perf:
@@ -275,6 +274,6 @@ class DotaCommands(IrenesCog):
     @check_streamers_rich_presence.before_loop
     async def before_check_streamers_rich_presence(self) -> None:
         """Wait for the IrenesBot, Dota Client and Game Coordinator ready-s."""
-        await self.bot.wait_for_ready()
+        await self.bot.wait_for("ready")
         await self.bot.dota.wait_until_ready()
         await self.bot.dota.wait_until_gc_ready()

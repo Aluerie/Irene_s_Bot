@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, TypedDict
 
 from twitchio.ext import commands
 
-from bot import IrenesCog
+from bot import IrenesComponent
+from utils import const
 
 if TYPE_CHECKING:
     import twitchio
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
         dt: datetime.datetime
 
 
-class Keywords(IrenesCog):
+class Keywords(IrenesComponent):
     """React to specific key word / key phrases with bot's own messages.
 
     Mostly used to make a small feeling of a crowd - something like many users are Pog-ing.
@@ -47,20 +48,20 @@ class Keywords(IrenesCog):
             ]
         ]
 
-    @commands.Cog.event(event="event_message")  # type: ignore # lib issue
-    async def keywords_response(self, message: twitchio.Message) -> None:
+    @commands.Component.listener(name="message")
+    async def keywords_response(self, message: twitchio.ChatMessage) -> None:
         """Sends a flavour message if a keyword/key phrase was spotted in the chat."""
-        if message.echo or not message.content or random.randint(1, 100) > 5:
+        if message.chatter.name in const.Bots or not message.text or random.randint(1, 100) > 5:
             return
 
         now = datetime.datetime.now(datetime.UTC)
         for keyword in self.keywords:
             for word in keyword["aliases"]:
-                if re.search(r"\b" + re.escape(word) + r"\b", message.content) and (now - keyword["dt"]).seconds > 600:
-                    await message.channel.send(keyword["response"])
+                if re.search(r"\b" + re.escape(word) + r"\b", message.text) and (now - keyword["dt"]).seconds > 600:
+                    await message.broadcaster.send_message(sender=self.bot.bot_id, message=keyword["response"])
                     keyword["dt"] = now
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(Keywords(bot))
+    await bot.add_component(Keywords(bot))

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from discord import Embed
 
-from bot import IrenesCog, irenes_loop
+from bot import IrenesComponent, irenes_loop
 from utils import const
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-class EmoteChecker(IrenesCog):
+class EmoteChecker(IrenesComponent):
     """Check if emotes from 3rd party services like 7TV, FFZ, BTTV are valid.
 
     Usable in case I remove an emote that is used in bot's responses.
@@ -49,24 +49,26 @@ class EmoteChecker(IrenesCog):
             return
 
         # SEVEN TV
-        async with self.bot.session.get(f"https://7tv.io/v3/users/twitch/{const.ID.Irene}") as resp:
+        async with self.bot.session.get(f"https://7tv.io/v3/users/twitch/{const.UserID.Irene}") as resp:
             stv_json = await resp.json()
             stv_emote_list = [emote["name"] for emote in stv_json["emote_set"]["emotes"]]
             await self.cross_check_emotes(stv_emote_list, const.STV, 0x3493EE)
 
         # FFZ
-        async with self.bot.session.get(f"https://api.frankerfacez.com/v1/room/id/{const.ID.Irene}") as resp:
+        async with self.bot.session.get(f"https://api.frankerfacez.com/v1/room/id/{const.UserID.Irene}") as resp:
             ffz_json = await resp.json()  # if we ever need this "654554" then it exists as `ffz_json["room"]["set"]`
             ffz_emote_list = [emote["name"] for emote in ffz_json["sets"]["654554"]["emoticons"]]
             await self.cross_check_emotes(ffz_emote_list, const.FFZ, 0x271F3E)
 
         # BTTV
-        async with self.bot.session.get(f"https://api.betterttv.net/3/cached/users/twitch/{const.ID.Irene}") as resp:
+        async with self.bot.session.get(
+            f"https://api.betterttv.net/3/cached/users/twitch/{const.UserID.Irene}"
+        ) as resp:
             bttv_json = await resp.json()
             bttv_emote_list = [emote["code"] for emote in bttv_json["channelEmotes"] + bttv_json["sharedEmotes"]]
             await self.cross_check_emotes(bttv_emote_list, const.BTTV, 0xD50014)
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(EmoteChecker(bot))
+    await bot.add_component(EmoteChecker(bot))

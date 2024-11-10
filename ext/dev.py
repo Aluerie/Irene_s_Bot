@@ -7,10 +7,8 @@ from typing import TYPE_CHECKING
 
 from twitchio.ext import commands
 
-from bot import IrenesCog, irenes_loop
-from core import CORE_EXTENSIONS
-from ext import WORK_EXTENSIONS
-from utils import checks, errors
+from bot import IrenesComponent
+from utils import checks
 
 if TYPE_CHECKING:
     from bot import IrenesBot
@@ -18,29 +16,14 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class Development(IrenesCog):
+class Development(IrenesComponent):
     """Dev Only Commands."""
 
     if TYPE_CHECKING:
         ext_alias_mapping: dict[str, str]
 
-    def __init__(self, bot: IrenesBot) -> None:
-        super().__init__(bot)
-        self.create_ext_aliases.start()
-
-    @irenes_loop(count=1)
-    async def create_ext_aliases(self) -> None:
-        core_mapping = {ext.removeprefix("core."): ext for ext in CORE_EXTENSIONS}
-        work_mapping = {ext.removeprefix("ext."): ext for ext in WORK_EXTENSIONS}
-
-        if intersection := core_mapping.keys() & work_mapping.keys():
-            msg = f"We have repeating aliases for core/work extensions. Overlapping keys: {intersection}."
-            raise errors.SomethingWentWrong(msg)
-        else:
-            self.ext_alias_mapping = core_mapping | work_mapping
-
     @checks.is_vps()
-    @checks.is_irene()
+    @commands.is_owner()
     @commands.command(aliases=["kill"])
     async def maintenance(self, ctx: commands.Context) -> None:
         """Kill the bot process on VPS.
@@ -60,7 +43,7 @@ class Development(IrenesCog):
             await ctx.send("Something went wrong.")
 
     @checks.is_vps()
-    @checks.is_irene()
+    @commands.is_owner()
     @commands.command(aliases=["restart"])
     async def reboot(self, ctx: commands.Context) -> None:
         """Restart the bot process on VPS.
@@ -78,30 +61,30 @@ class Development(IrenesCog):
             await ctx.send("Something went wrong.")
 
     @checks.is_vps()
-    @checks.is_irene()
+    @commands.is_owner()
     @commands.command()
     async def unload(self, ctx: commands.Context, *, extension: str) -> None:
         ext = self.ext_alias_mapping[extension.lower()]
-        self.bot.unload_module(ext)
+        await self.bot.unload_module(ext)
         await ctx.send(f"Successfully unloaded `{ext}`.")
 
     @checks.is_vps()
-    @checks.is_irene()
+    @commands.is_owner()
     @commands.command()
     async def reload(self, ctx: commands.Context, *, extension: str) -> None:
         ext = self.ext_alias_mapping[extension.lower()]
-        self.bot.reload_module(ext)
+        await self.bot.reload_module(ext)
         await ctx.send(f"Successfully reloaded `{ext}`.")
 
     @checks.is_vps()
-    @checks.is_irene()
+    @commands.is_owner()
     @commands.command()
     async def load(self, ctx: commands.Context, *, extension: str) -> None:
         ext = self.ext_alias_mapping[extension.lower()]
-        self.bot.load_module(ext)
+        await self.bot.load_module(ext)
         await ctx.send(f"Successfully loaded `{ext}`.")
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(Development(bot))
+    await bot.add_component(Development(bot))

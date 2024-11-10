@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import itertools
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, TypedDict, override
 
 import asyncpg
 import twitchio  # noqa: TCH002
-from twitchio.ext import commands, routines
+from twitchio.ext import commands
 
-from bot import IrenesCog
-from utils import checks
+from bot import IrenesComponent, irenes_loop
+from utils import const, errors
 
 if TYPE_CHECKING:
     from bot import IrenesBot
@@ -16,12 +15,12 @@ if TYPE_CHECKING:
     class TwitchCommands(TypedDict):
         """`chat_commands` Table Structure."""
 
-        streamer_id: int
+        streamer_id: str
         command_name: str
         content: str
 
 
-class CustomCommands(IrenesCog):
+class CustomCommands(IrenesComponent):
     """Custom commands.
 
     Commands that are managed on the fly.
@@ -30,10 +29,17 @@ class CustomCommands(IrenesCog):
 
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
-        self.command_cache: dict[int, dict[str, str]] = {}
+        self.command_cache: dict[str, dict[str, str]] = {}
+
+    @override
+    async def component_load(self) -> None:
         self.populate_cache.start()
 
-    @routines.routine(iterations=1)
+    @override
+    async def component_teardown(self) -> None:
+        self.populate_cache.cancel()
+
+    @irenes_loop(count=1)
     async def populate_cache(self) -> None:
         """Populate custom commands cache."""
         query = """
@@ -44,31 +50,42 @@ class CustomCommands(IrenesCog):
         for row in rows:
             self.command_cache.setdefault(row["streamer_id"], {})[row["command_name"]] = row["content"]
 
-    @commands.Cog.event()  # type: ignore # one day they will fix it
-    async def event_message(self, message: twitchio.Message) -> None:
+    # TODO: look how twitchio does this, they are likely more efficient.
+    @commands.Component.listener(name="message")
+    async def event_message(self, message: twitchio.ChatMessage) -> None:
         """Listen to prefix custom commands.
 
         This is a bit different from twitchio commands. This one is just for this cog.
         """
         # An event inside a cog!
-        if message.echo:
+        if not message.text.startswith(self.bot.prefixes) or message.chatter.id == const.UserID.Bot:
             return
 
-        # TODO: look how twitchio does this, maybe they are more efficient.
+        channel_commands = self.command_cache.get(message.broadcaster.id, {})
+        if not channel_commands:
+            # no commands registered for this channel
+            return
 
-        user = await message.channel.user()
-        for k, p in itertools.product(self.command_cache.get(user.id, []), self.bot.prefixes):
-            if message.content.startswith(f"{p}{k}"):  # type: ignore
-                await message.channel.send(self.command_cache[user.id][k])
+        # text without !, ?, $
+        no_prefix_text = message.text[1:]
+
+        for command_name, command_response in channel_commands.items():
+            if no_prefix_text.startswith(command_name):
+                await message.broadcaster.send_message(
+                    sender=const.UserID.Bot,
+                    message=command_response,
+                )
 
     async def cmd_group(self, ctx: commands.Context) -> None:
         """Callback for custom command management group "cmd"."""
         await ctx.send("Sorry, you should use it with subcommands add, del, edit")
 
-    # todo: do it with @commands.group when they bring it back
-    cmd = commands.Group(name="cmd", func=cmd_group)
+    @commands.group(invoke_fallback=True)
+    async def cmd(self, ctx: commands.Context) -> None:
+        """Group command to define cmd"""
+        await ctx.send('You need to use this with subcommands, i.e. "cmd add/delete/edit/list"')
 
-    @checks.is_mod()
+    @commands.is_moderator()
     @cmd.command()
     async def add(self, ctx: commands.Context, cmd_name: str, *, text: str) -> None:
         """Add custom command."""
@@ -77,16 +94,16 @@ class CustomCommands(IrenesCog):
             (streamer_id, command_name, content)
             VALUES ($1, $2, $3)
         """
-        user = await ctx.message.channel.user()
         try:
-            await self.bot.pool.execute(query, user.id, cmd_name, text)
+            await self.bot.pool.execute(query, ctx.broadcaster.id, cmd_name, text)
         except asyncpg.UniqueViolationError:
             msg = "There already exists a command with such name."
-            raise commands.BadArgument(msg)
-        self.command_cache.setdefault(user.id, {})[cmd_name] = text
+            raise errors.BadArgumentError(msg)
+
+        self.command_cache.setdefault(ctx.broadcaster.id, {})[cmd_name] = text
         await ctx.send(f"Added the command {cmd_name}.")
 
-    @checks.is_mod()
+    @commands.is_moderator()
     @cmd.command(name="del")
     async def delete(self, ctx: commands.Context, command_name: str) -> None:
         """Delete custom command by name."""
@@ -95,15 +112,15 @@ class CustomCommands(IrenesCog):
             WHERE streamer_id=$1 AND command_name=$2
             RETURNING command_name
         """
-        user = await ctx.message.channel.user()
-        val = await self.bot.pool.fetchval(query, user.id, command_name)
+        val = await self.bot.pool.fetchval(query, ctx.broadcaster.id, command_name)
         if val is None:
             msg = "There is no command with such name."
-            raise commands.BadArgument(msg)
-        self.command_cache[user.id].pop(command_name)
+            raise errors.BadArgumentError(msg)
+
+        self.command_cache[ctx.broadcaster.id].pop(command_name)
         await ctx.send(f"Deleted the command {command_name}")
 
-    @checks.is_mod()
+    @commands.is_moderator()
     @cmd.command()
     async def edit(self, ctx: commands.Context, command_name: str, *, text: str) -> None:
         """Edit custom command."""
@@ -113,25 +130,25 @@ class CustomCommands(IrenesCog):
             WHERE streamer_id=$1 AND command_name=$2
             RETURNING command_name
         """
-        user = await ctx.message.channel.user()
-        val = await self.bot.pool.fetchval(query, user.id, command_name, text)
+        val = await self.bot.pool.fetchval(query, ctx.broadcaster.id, command_name, text)
         if val is None:
             msg = "There is no command with such name."
-            raise commands.BadArgument(msg)
+            raise errors.BadArgumentError(msg)
 
-        self.command_cache[user.id][command_name] = text
+        self.command_cache[ctx.broadcaster.id][command_name] = text
         await ctx.send(f"Edited the command {command_name}.")
 
+    # TODO: THIS IS KINDA BAD, we need more centralized help, maybe git page
     @cmd.command(name="list")
     async def cmd_list(self, ctx: commands.Context) -> None:
         """Get commands list."""
         cache_list = [f"!{name}" for v in self.command_cache.values() for name in v]
-        bot_cmds = [
-            f"!{v.full_name}" for v in self.bot.commands.values() if not v._checks and not isinstance(v, commands.Group)
-        ]
-        await ctx.send(", ".join(cache_list + bot_cmds))
+        # bot_cmds = [
+        #     f"!{v.full_name}" for v in self.bot.commands.values() if not v._checks and not isinstance(v, commands.Group)
+        # ]
+        await ctx.send(", ".join(cache_list))
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(CustomCommands(bot))
+    await bot.add_component(CustomCommands(bot))

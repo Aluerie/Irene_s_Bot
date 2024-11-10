@@ -2,21 +2,12 @@
 -- with my discord bot (so they both have access to the same data, i.e. my dota match history).
 -- So in order to differentiate - put `ttv_` prefix
 
-CREATE TABLE IF NOT EXISTS ttv_joined_streamers (
-    user_id BIGINT PRIMARY KEY,
-    user_name TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS ttv_chat_commands (
     command_name TEXT NOT NULL,
     content TEXT NOT NULL,
-    streamer_id BIGINT NOT NULL,
+    streamer_id TEXT NOT NULL,
 
-    PRIMARY KEY (streamer_id, command_name),
-
-    CONSTRAINT fk_streamer
-        FOREIGN KEY (streamer_id)
-            REFERENCES ttv_joined_streamers(user_id) ON DELETE CASCADE
+    PRIMARY KEY (streamer_id, command_name)
 );
 
 CREATE TABLE IF NOT EXISTS ttv_counters (
@@ -25,14 +16,14 @@ CREATE TABLE IF NOT EXISTS ttv_counters (
 );
 
 CREATE TABLE IF NOT EXISTS ttv_first_redeems (
-    user_id BIGINT PRIMARY KEY,
+    user_id TEXT PRIMARY KEY,
     user_name TEXT NOT NULL,
     first_times BIGINT DEFAULT (1)
 );
 
 CREATE TABLE IF NOT EXISTS ttv_dota_streamers (
     account_id BIGINT PRIMARY KEY,
-    twitch_id BIGINT NOT NULL,
+    twitch_id TEXT NOT NULL,
 
     twitch_name TEXT NOT NULL,
 
@@ -64,4 +55,10 @@ CREATE TABLE IF NOT EXISTS ttv_dota_matches (
 CREATE TABLE IF NOT EXISTS ttv_stream_titles (
     title TEXT NOT NULL PRIMARY KEY,
     edit_time TIMESTAMPTZ DEFAULT (NOW() at time zone 'utc')
+);
+
+CREATE TABLE IF NOT EXISTS ttv_tokens (
+    user_id TEXT PRIMARY KEY, 
+    token TEXT NOT NULL, 
+    refresh TEXT NOT NULL
 );

@@ -24,7 +24,7 @@ class UnusedAlerts(IrenesCog):
 
     async def subscribe_to_events(self) -> None:
         """Create eventsub subscriptions."""
-        broadcaster = const.ID.Irene
+        broadcaster = const.UserID.Irene
         token = config.TTG_IRENE_ACCESS_TOKEN
 
         # Charity                               channel:read:charity

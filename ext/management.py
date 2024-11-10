@@ -3,11 +3,10 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING
 
-from twitchio.ext import commands, eventsub
+from twitchio.ext import commands
 
-import config
-from bot import IrenesCog, irenes_loop
-from utils import checks, const, errors, formats
+from bot import IrenesComponent, irenes_loop
+from utils import const, errors, formats
 
 if TYPE_CHECKING:
     import twitchio
@@ -15,7 +14,7 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-class ChannelManagement(IrenesCog):
+class ChannelManagement(IrenesComponent):
     """Channel Management commands.
 
     Such as change Game or Title.
@@ -41,7 +40,7 @@ class ChannelManagement(IrenesCog):
 
         This is why we need to track the past ourselves.
         """
-        channel_info = await self.bot.fetch_channel(const.Name.Irene)
+        channel_info = await self.irene.fetch_channel_info()
 
         self.game_tracked = channel_info.game_name
         self.title_tracked = channel_info.title
@@ -49,13 +48,11 @@ class ChannelManagement(IrenesCog):
     @commands.command()
     async def game(self, ctx: commands.Context, *, game_name: str | None = None) -> None:
         """Either get current channel game or update it."""
-        streamer = await ctx.channel.user()
 
         if not game_name:
             # 1. No argument
             # respond with current game name the channel is playing
-            channel_info = await ctx.bot.fetch_channel(streamer.name)
-
+            channel_info = await ctx.broadcaster.fetch_channel_info()
             game_name = channel_info.game_name if channel_info.game_name else "No game category"
             await ctx.send(f"{game_name} {const.STV.DankDolmes}")
             return
@@ -70,7 +67,7 @@ class ChannelManagement(IrenesCog):
         if game_name.lower() == "clear":
             # b. A keyword to clear the game category, sets it uncategorised
             self.game_updated_dt = datetime.datetime.now(datetime.UTC)
-            await streamer.modify_stream(token=config.TTG_IRENE_ACCESS_TOKEN, game_id=0)
+            await ctx.broadcaster.modify_channel(game_id="0")
             await ctx.send(f'Set game to "No game category" {const.STV.uuh}')
             return
 
@@ -84,15 +81,15 @@ class ChannelManagement(IrenesCog):
             return
 
         self.game_updated_dt = datetime.datetime.now(datetime.UTC)
-        await streamer.modify_stream(token=config.TTG_IRENE_ACCESS_TOKEN, game_id=game.id)
+        await ctx.broadcaster.modify_channel(game_id=game.id)
         await ctx.send(f'Changed game to "{game.name}" {const.STV.DankMods}')
         return
 
-    async def update_title(self, streamer: twitchio.User, title: str) -> None:
+    async def update_title(self, streamer: twitchio.PartialUser, title: str) -> None:
         """Helper function to update the streamer's title."""
         self.title_updated_dt = datetime.datetime.now(datetime.UTC)
         try:
-            await streamer.modify_stream(token=config.TTG_IRENE_ACCESS_TOKEN, title=title)
+            await streamer.modify_channel(title=title)
         except Exception as error:
             if "Title is too long" in str(error):
                 msg = f"Sorry, title is too long: {len(title)}/140"
@@ -103,7 +100,8 @@ class ChannelManagement(IrenesCog):
             # success
             return
 
-    async def title_callback(self, ctx: commands.Context, *, title: str | None = None) -> None:
+    @commands.group(name="title", invoke_fallback=True)
+    async def title_group(self, ctx: commands.Context, *, title: str | None = None) -> None:
         """Callback for !title group commands.
 
         Can be used with subcommands. But when used on its - it either shows the title or updates it,
@@ -119,7 +117,7 @@ class ChannelManagement(IrenesCog):
         if not title:
             # 1. No argument
             # respond with current game name the channel is playing
-            channel_info = await ctx.bot.fetch_channel(streamer.name)
+            channel_info = await ctx.broadcaster.fetch_channel_info()
             await ctx.send(channel_info.title)
             return
 
@@ -132,10 +130,7 @@ class ChannelManagement(IrenesCog):
             await self.update_title(streamer, title=title)
             await ctx.send(f'{const.STV.donkHappy} Changed title to "{title}"')
 
-    # todo: do it with @commands.group when they bring it back
-    title_group = commands.Group(name="title", func=title_callback)
-
-    @checks.is_mod()
+    @commands.is_moderator()
     @title_group.command(name="set")
     async def title_set(self, ctx: commands.Context, *, title: str) -> None:
         """Set the title for the stream."""
@@ -143,7 +138,7 @@ class ChannelManagement(IrenesCog):
         await self.update_title(streamer, title=title)
         await ctx.send(f'{const.STV.donkHappy} Set title to "{title}"')
 
-    @checks.is_mod()
+    @commands.is_moderator()
     @title_group.command(name="restore", aliases=["prev", "previous"])
     async def title_restore(self, ctx: commands.Context, offset: int = 1) -> None:
         """Restore title for the stream from the database.
@@ -172,7 +167,7 @@ class ChannelManagement(IrenesCog):
             await self.update_title(streamer, title=title)
             await ctx.send(f"Set the title to {formats.ordinal(offset)} in history: {title}")
 
-    @checks.is_mod()
+    @commands.is_moderator()
     @title_group.command(name="history")
     async def title_history(self, ctx: commands.Context, number: int = 3) -> None:
         """Shows some title history so you can remember/edit what we had before.
@@ -196,25 +191,31 @@ class ChannelManagement(IrenesCog):
         else:
             await ctx.send("Database doesn't have any titles saved.")
 
-    @commands.Cog.event(event="event_eventsub_notification_channel_update")  # type: ignore # lib issue
-    async def channel_update(self, event: eventsub.NotificationEvent) -> None:
+    @commands.Component.listener(name="channel_update")
+    async def channel_update(self, update: twitchio.ChannelUpdate) -> None:
         """Channel Info (game, title, etc) got updated."""
-        payload: eventsub.ChannelUpdateData = event.data  # type: ignore
-        channel_name = payload.broadcaster.name
-        assert channel_name
-        channel = self.bot.get_channel(channel_name)
-        assert channel
+        # payload: eventsub.ChannelUpdateData = event.data
+        # channel_name = payload.broadcaster.name
+        # assert channel_name
+        # channel = self.bot.get_channel(channel_name)
+        # assert channel
 
         now = datetime.datetime.now(datetime.UTC)
         # time check is needed so we don't repeat notif that comes from !game !title commands.
 
-        if self.game_tracked != payload.category_name and (now - self.game_updated_dt).seconds > 15:
-            await channel.send(f'{const.STV.donkDetective} Game was changed to "{payload.category_name}"')
+        if self.game_tracked != update.category_name and (now - self.game_updated_dt).seconds > 15:
+            await update.broadcaster.send_message(
+                sender=const.UserID.Bot,
+                message=f'{const.STV.donkDetective} Game was changed to "{update.category_name}"',
+            )
 
-        if self.title_tracked != payload.title and (now - self.title_updated_dt).seconds > 15:
-            await channel.send(f'{const.STV.DankThink} Title was changed to "{payload.title}"')
+        if self.title_tracked != update.title and (now - self.title_updated_dt).seconds > 15:
+            await update.broadcaster.send_message(
+                sender=const.UserID.Bot,
+                message=f'{const.STV.DankThink} Title was changed to "{update.title}"',
+            )
 
-        if self.title_tracked != payload.title:
+        if self.title_tracked != update.title:
             # we need to record the title into the database
             query = """
                 INSERT INTO ttv_stream_titles
@@ -223,13 +224,13 @@ class ChannelManagement(IrenesCog):
                 ON CONFLICT (title) DO
                     UPDATE SET edit_time = $2;
             """
-            await self.bot.pool.execute(query, payload.title, now)
+            await self.bot.pool.execute(query, update.title, now)
 
-        self.game_tracked = payload.category_name
-        self.title_tracked = payload.title
+        self.game_tracked = update.category_name
+        self.title_tracked = update.title
 
-    @commands.Cog.event(event="event_eventsub_notification_stream_end")  # type: ignore # lib issue
-    async def clear_the_database(self, _: eventsub.NotificationEvent) -> None:
+    @commands.Component.listener(name="stream_offline")
+    async def clear_the_database(self, _: twitchio.StreamOffline) -> None:
         """Clear the database from old enough titles.
 
         I guess stream end is a good event for it - it's rare enough and we don't need old titles after stream is over.
@@ -239,6 +240,6 @@ class ChannelManagement(IrenesCog):
         await self.bot.pool.execute(query, cutoff_dt)
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(ChannelManagement(bot))
+    await bot.add_component(ChannelManagement(bot))

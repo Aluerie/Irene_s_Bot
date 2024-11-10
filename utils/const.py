@@ -1,18 +1,18 @@
-from enum import IntEnum, StrEnum
+from enum import StrEnum
 
 # ruff: noqa: N815
 
 ERROR_ROLE_MENTION = "<@&1116171071528374394>"
 
 
-class ID(IntEnum):
+class UserID(StrEnum):
     """Known/special user IDs."""
 
-    Irene = 180499648
-    Bot = 519438249
+    Irene = "180499648"
+    Bot = "519438249"
 
 
-class Name(StrEnum):
+class LowerName(StrEnum):
     """Known/special user names."""
 
     Irene = "irene_adler__"
@@ -44,6 +44,7 @@ class BTTV(StrEnum):
     """Some of BTTV emotes enabled at @Irene channel."""
 
     DankG = "DankG"
+    Offline = "Offline"
     peepoHey = "peepoHey"
     PogU = "PogU"
     Smoge = "Smoge"
@@ -99,7 +100,6 @@ class STV(StrEnum):
     heyinoticedyouhaveaprimegamingbadgenexttoyourname = "heyinoticedyouhaveaprimegamingbadgenexttoyourname"
     hi = "hi"
     How2Read = "How2Read"
-    Offline = "Offline"
     peepoAd = "peepoAd"
     peepoDapper = "peepoDapper"
     plink = "plink"

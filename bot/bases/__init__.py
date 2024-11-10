@@ -1,2 +1,2 @@
-from .cog import *
+from .component import *
 from .tasks import *

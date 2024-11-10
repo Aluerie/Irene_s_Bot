@@ -10,14 +10,14 @@ import twitchio
 from twitchio.ext import commands
 
 import config
-from bot import IrenesCog, irenes_loop
+from bot import IrenesComponent, irenes_loop
 from utils import const
 
 if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-class BetaCog(IrenesCog):
+class BetaCog(IrenesComponent):
     """Base Class for BetaTest cog.
 
     Used to test random code snippets.

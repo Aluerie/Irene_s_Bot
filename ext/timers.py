@@ -5,9 +5,9 @@ import itertools
 import random
 from typing import TYPE_CHECKING
 
-from twitchio.ext import commands, eventsub
+from twitchio.ext import commands
 
-from bot import IrenesCog, irenes_loop
+from bot import IrenesComponent, irenes_loop
 from utils import const
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-class Timers(IrenesCog):
+class Timers(IrenesComponent):
     """Periodic messages/announcements in Irene's channel."""
 
     def __init__(self, bot: IrenesBot) -> None:
@@ -46,24 +46,24 @@ class Timers(IrenesCog):
     @irenes_loop(count=1)
     async def check_stream_online(self) -> None:
         """Check if the stream is live on bot's reboot."""
-        stream = next(iter(await self.bot.fetch_streams(user_ids=[const.ID.Irene])), None)  # None if offline
+        stream = next(iter(await self.bot.fetch_streams(user_ids=[const.UserID.Irene])), None)  # None if offline
         if stream:
             self.timer_task.start()
 
-    @commands.Cog.event()  # type: ignore # lib issue
-    async def event_eventsub_notification_stream_start(self, _: eventsub.StreamOnlineData) -> None:
+    @commands.Component.listener(name="stream_online")
+    async def event_eventsub_notification_stream_start(self, _: twitchio.StreamOnline) -> None:
         """Stream started (went live)."""
         self.timer_task.start()
 
-    @commands.Cog.event()  # type: ignore # lib issue
-    async def event_eventsub_notification_stream_end(self, _: eventsub.StreamOfflineData) -> None:
+    @commands.Component.listener(name="stream_offline")
+    async def event_eventsub_notification_stream_end(self, _: twitchio.StreamOffline) -> None:
         """Stream ended (went offline)."""
         self.timer_task.cancel()
 
-    @commands.Cog.event(event="event_message")  # type: ignore # lib issue
-    async def count_messages(self, message: twitchio.Message) -> None:
+    @commands.Component.listener(name="message")
+    async def count_messages(self, message: twitchio.ChatMessage) -> None:
         """Count messages between timers so the bot doesn't spam fill up an empty chat."""
-        if message.echo:
+        if message.chatter.name in const.Bots:
             # * do not count messages from the bot itself
             # other bots soon^tm will stop talking in my chat at all so this is a fine check;
             # No need for `message.author.name.lower() in const.Bot` condition
@@ -80,21 +80,20 @@ class Timers(IrenesCog):
 
         # refresh lines count so it only counts messages from the current stream.
         self.lines_count = 0
-        irene_channel = self.irene_channel()
         for text in itertools.cycle(messages):
             while self.lines_count < 99:
                 await asyncio.sleep(100)
 
             self.lines_count = 0
-            await irene_channel.send(text)
+            await self.deliver(text)
             minutes_to_sleep = 69 + random.randint(1, 21)
             await asyncio.sleep(minutes_to_sleep * 60)
 
     @timer_task.before_loop
     async def timer_task_before_loop(self) -> None:
-        await self.bot.wait_for_ready()
+        await self.bot.wait_for("ready")
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(Timers(bot))
+    await bot.add_component(Timers(bot))

@@ -6,9 +6,9 @@ import random
 import re
 from typing import TYPE_CHECKING, TypedDict
 
-from twitchio.ext import commands, eventsub
+from twitchio.ext import commands
 
-from bot import IrenesCog
+from bot import IrenesComponent
 from utils import const, formats
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
         first_times: int
 
 
-class Counters(IrenesCog):
+class Counters(IrenesComponent):
     """Track some silly number counters of how many times this or that happened."""
 
     def __init__(self, bot: IrenesBot) -> None:
@@ -32,14 +32,13 @@ class Counters(IrenesCog):
 
     # ERM COUNTERS
 
-    @commands.Cog.event(event="event_message")  # type: ignore # one day they will fix it
-    async def erm_counter(self, message: twitchio.Message) -> None:
+    @commands.Component.listener(name="message")
+    async def erm_counter(self, message: twitchio.ChatMessage) -> None:
         """Erm Counter."""
-        if message.echo or not message.content or message.author.name in const.Bots:
+        if message.chatter.name in const.Bots or not message.text or message.broadcaster.id != const.UserID.Irene:
+            # limit author/channel
             return
-        if message.channel.name != const.Name.Irene:
-            return
-        if not re.search(r"\bErm\b", message.content):
+        if not re.search(r"\bErm\b", message.text):
             return
 
         query = """--sql
@@ -52,7 +51,10 @@ class Counters(IrenesCog):
 
         # milestone
         if value % 1000 == 0:
-            await message.channel.send(f"{const.STV.wow} we reached a milestone of {value} {const.STV.Erm} in chat")
+            await message.broadcaster.send_message(
+                sender=self.bot.bot_id,
+                message=f"{const.STV.wow} we reached a milestone of {value} {const.STV.Erm} in chat",
+            )
             return
 
         # random notification/reminder
@@ -61,7 +63,10 @@ class Counters(IrenesCog):
             await asyncio.sleep(3)
             query = "SELECT value FROM ttv_counters WHERE name = $1"
             value: int = await self.bot.pool.fetchval(query, "erm")
-            await message.channel.send(f"{value} {const.STV.Erm} in chat.")
+            await message.broadcaster.send_message(
+                sender=self.bot.bot_id,
+                message=f"{value} {const.STV.Erm} in chat.",
+            )
             return
 
     @commands.command(aliases=["erm"])
@@ -73,12 +78,11 @@ class Counters(IrenesCog):
 
     # FIRST COUNTER
 
-    @commands.Cog.event(event="event_eventsub_notification_channel_reward_redeem")  # type: ignore # lib issue
-    async def first_counter(self, event: eventsub.NotificationEvent) -> None:
+    @commands.Component.listener(name="custom_redemption_add")
+    async def first_counter(self, redemption: twitchio.ChannelPointsRedemptionAdd) -> None:
         """Count all redeems for the reward 'First'."""
-        payload: eventsub.CustomRewardRedemptionAddUpdateData = event.data  # type: ignore
 
-        if payload.reward.title != "First!" or payload.broadcaster.id != const.ID.Irene:
+        if redemption.reward.title != "First!" or redemption.broadcaster.id != const.UserID.Irene:
             # Secure Irene channel and that it is exactly "First!" redeem
             # a bit scary since I can rename it one day and then we lose the feature but not sure if there is a better way
             # todo: create a routine checking if we have a channel point reward named First as a future fool-proof thing
@@ -91,15 +95,17 @@ class Counters(IrenesCog):
                 UPDATE SET first_times = ttv_first_redeems.first_times + 1, user_name = $2
             RETURNING first_times;
         """
-        count: int = await self.bot.pool.fetchval(query, payload.user.id, str(payload.user.name))
-        channel = self.get_channel(payload.broadcaster)
-        user_display_name = await self.get_display_name(payload.user, channel)
+        count: int = await self.bot.pool.fetchval(query, redemption.user.id, str(redemption.user.name))
 
         if count == 1:
-            msg = f'@{user_display_name}, gratz on your very first "First!" {const.STV.gg}'
+            msg = f'@{redemption.user.display_name}, gratz on your very first "First!" {const.STV.gg}'
         else:
-            msg = f"@{user_display_name}, Gratz! you've been first {count} times {const.STV.gg} {const.Global.EZ}"
-        await channel.send(msg)
+            msg = f"@{redemption.user.display_name}, Gratz! you've been first {count} times {const.STV.gg} {const.Global.EZ}"
+
+        await redemption.broadcaster.send_message(
+            sender=self.bot.bot_id,
+            message=msg,
+        )
 
     @commands.command(aliases=["first"])
     async def firsts(self, ctx: commands.Context) -> None:
@@ -138,6 +144,6 @@ class Counters(IrenesCog):
         await ctx.send(content)
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(Counters(bot))
+    await bot.add_component(Counters(bot))

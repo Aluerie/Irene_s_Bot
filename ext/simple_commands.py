@@ -9,14 +9,14 @@ import twitchio  # noqa: TCH002
 from twitchio.ext import commands
 
 import config
-from bot import IrenesCog
-from utils import checks, const, formats
+from bot import IrenesComponent
+from utils import const, formats
 
 if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-class DefaultCommands(IrenesCog):
+class DefaultCommands(IrenesComponent):
     """Simple commands.
 
     Simple in a sense that they are just somewhat static and their implementation is simple.
@@ -44,7 +44,7 @@ class DefaultCommands(IrenesCog):
         )
         await ctx.send(msg)
 
-    @commands.command(aliases=['sekironotes'])
+    @commands.command(aliases=["sekironotes"])
     async def sekirodoc(self, ctx: commands.Context) -> None:
         """Link to my Sekiro notes."""
         await ctx.send(  # cspell: disable-next-line
@@ -57,11 +57,8 @@ class DefaultCommands(IrenesCog):
     @commands.command()
     async def clip(self, ctx: commands.Context) -> None:
         """Create a clip for last 30 seconds of the stream."""
-        streamer = await ctx.channel.user()
-        clip = await streamer.create_clip(config.TTG_ACCESS_TOKEN)
-        await ctx.send(f"https://clips.twitch.tv/{clip["id"]}")
-        # now = datetime.datetime.now(datetime.UTC)
-        #  new_clips = await streamer.fetch_clips(started_at=now)
+        clip = await ctx.broadcaster.create_clip(token_for=const.UserID.Bot)
+        await ctx.send(f"https://clips.twitch.tv/{clip.id}")
 
     @commands.command(name="commands", aliases=["help"])
     async def command_list(self, ctx: commands.Context) -> None:
@@ -87,10 +84,10 @@ class DefaultCommands(IrenesCog):
     @commands.command(aliases=["hi", "yo"])
     async def hello(self, ctx: commands.Context) -> None:
         """Hello."""
-        await ctx.send(f"{const.STV.hello} @{ctx.author.name} {const.STV.yo}")
+        await ctx.send(f"{const.STV.hello} @{ctx.chatter.display_name} {const.STV.yo}")
 
     @commands.command()
-    async def love(self, ctx: commands.Context, *, arg: str) -> None:
+    async def love(self, ctx: commands.Context, *, arg: str) -> None:  # TODO: maybe twitchio.User | str
         """Measure love between chatter and `arg`.
 
         arg can be a user or anything else.
@@ -110,7 +107,7 @@ class DefaultCommands(IrenesCog):
                 emote = const.STV.DankL
             return love, emote
 
-        author_mention = ctx.author.mention  # type: ignore
+        author_mention = ctx.chatter.mention
         chatter = ctx.channel.get_chatter(arg.lstrip("@"))
 
         if not chatter:
@@ -126,9 +123,9 @@ class DefaultCommands(IrenesCog):
 
         if chatter_display_name.lower() in const.Bots:
             await ctx.send("Silly organic, bots cannot know love BibleThump")
-        elif chatter.name == ctx.author.name:
+        elif chatter.name == ctx.chatter.name:
             await ctx.send("pls")
-        elif chatter.name == const.Name.Irene:
+        elif chatter.name == const.LowerName.Irene:
             await ctx.send(f"The {author_mention}'s love for our beloved Irene transcends all")
         else:
             love, emote = choose_love_emote()
@@ -149,11 +146,8 @@ class DefaultCommands(IrenesCog):
     @commands.command()
     async def lurk(self, ctx: commands.Context) -> None:
         """Make it clear to the chat that you are lurking."""
-        try:
-            mention = ctx.author.mention  # type: ignore
-        except:
-            mention = f"@{ctx.author.name}"
-        await ctx.send(f"{mention} is now lurking {const.STV.DankLurk} Have fun {const.STV.donkHappy}")
+        await ctx.send(f"{ctx.chatter.mention} is now lurking {const.STV.DankLurk} Have fun {const.STV.donkHappy}")
+        # TODO: maybe make something like returning message for them with a time that they lurked
 
     @commands.command(name="decide", aliases=["ball", "8ball", "answer", "question", "yesno"])
     async def magic_ball(self, ctx: commands.Context, *, text: str | None = None) -> None:
@@ -239,12 +233,11 @@ class DefaultCommands(IrenesCog):
         """Get the link to my Spotify playlist."""
         await ctx.send("open.spotify.com/playlist/7fVAcuDPLVAUL8555vy8Kz?si=b26cecab2cf24608")  # cSpell: ignore DPLVAUL
 
-    @commands.cooldown(rate=1, per=60, bucket=commands.Bucket.channel)
+    # @commands.cooldown(rate=1, per=60, bucket=commands.Bucket.channel) # TODO: WAIT TILL COOL-DOWNS R IMPLEMENTED
     @commands.command(aliases=["rr", "russianroulette"])
     async def roulette(self, ctx: commands.Context) -> None:
         """Play russian roulette."""
-        mention: str = ctx.author.mention  # type: ignore
-        user_id: int = ctx.author.id  # type: ignore # in reality it's str and timeout accepts it just fine
+        mention = ctx.chatter.mention
 
         for phrase in [
             f"/me places the revolver to {mention}'s head {const.FFZ.monkaGIGAGUN}",
@@ -262,15 +255,23 @@ class DefaultCommands(IrenesCog):
             await ctx.send(f"Revolver clicks! {mention} has lived to survive roulette! {const.STV.POGCRAZY}")
         else:
             await ctx.send(f"Revolver fires! {mention} lies dead in chat {const.STV.Deadge}")
-            streamer = await ctx.channel.user()
-            await streamer.timeout_user(config.TTG_ACCESS_TOKEN, const.ID.Bot, user_id, 30, "Lost in !russianroulette")
 
-    @checks.is_mod()
+            await ctx.broadcaster.timeout_user(
+                moderator=const.UserID.Bot,
+                user=ctx.chatter.id,
+                duration=30,
+                reason="Lost in !russianroulette",
+            )
+
+    @commands.is_moderator()
     @commands.command(aliases=["so"])
     async def shoutout(self, ctx: commands.Context, user: twitchio.User) -> None:
         """Do /shoutout to a user."""
-        streamer = await ctx.channel.user()
-        await streamer.shoutout(config.TTG_IRENE_ACCESS_TOKEN, user.id, const.ID.Irene)
+        await ctx.broadcaster.send_shoutout(
+            to_broadcaster=user.id,
+            moderator=const.UserID.Bot,
+            token_for=const.UserID.Bot,
+        )
 
     @commands.command()
     async def song(self, ctx: commands.Context) -> None:
@@ -296,7 +297,7 @@ class DefaultCommands(IrenesCog):
         streamer = await ctx.channel.user()
         stream = next(iter(await self.bot.fetch_streams(user_ids=[streamer.id])), None)  # None if offline
         if stream is None:
-            await ctx.send(f"The stream is offline {const.STV.Offline}")
+            await ctx.send(f"The stream is offline {const.BTTV.Offline}")
         else:
             uptime = datetime.datetime.now(datetime.UTC) - stream.started_at
             await ctx.send(f"{formats.timedelta_to_words(uptime)} {const.STV.peepoDapper}")
@@ -304,23 +305,26 @@ class DefaultCommands(IrenesCog):
     @commands.command(aliases=["seppuku"])
     async def vanish(self, ctx: commands.Context) -> None:
         """Allows for chatters to vanish from the chat by time-outing themselves."""
-        if ctx.author.is_mod:  # type: ignore
-            if "seppuku" in ctx.message.content:  # type: ignore
-                msg = f"Emperor Kappa does not allow you this honour, {ctx.author.mention} (bcs you're a moderator)"  # type: ignore
+        if ctx.chatter._is_moderator:  # TODO: PRIVATE MONKA
+            if "seppuku" in ctx.message.text:
+                msg = f"Emperor Kappa does not allow you this honour, {ctx.chatter.mention} (bcs you're a moderator)"
             else:
                 msg = "Moderators can't vanish"
             await ctx.send(msg)
         else:
-            user_id: int = ctx.author.id  # type: ignore # in reality it's str and timeout accepts it just fine
-            streamer = await ctx.channel.user()
-            await streamer.timeout_user(config.TTG_ACCESS_TOKEN, const.ID.Bot, user_id, 1, "Used vanish")
+            await ctx.broadcaster.timeout_user(
+                moderator=const.UserID.Bot,
+                user=ctx.chatter.id,
+                duration=1,
+                reason="Used !vanish",
+            )
 
     @commands.command()
     async def vods(self, ctx: commands.Context) -> None:
         """Get the link to youtube vods archive."""
-        await ctx.send(f"youtube.com/@Aluerie_VODS/ {const.STV.Cinema}")
+        await ctx.send(f"youtube.com/@AluerieVODS/ {const.STV.Cinema}")
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(DefaultCommands(bot))
+    await bot.add_component(DefaultCommands(bot))

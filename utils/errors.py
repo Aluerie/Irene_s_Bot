@@ -31,6 +31,12 @@ class CheckError(IrenesBotError):
     __slots__: tuple[str, ...] = ()
 
 
+class BadArgumentError(IrenesBotError):
+    """Something wasn't properly used"""
+
+    __slots__: tuple[str, ...] = ()
+
+
 class UsageError(IrenesBotError):
     """Something wasn't properly used"""
 

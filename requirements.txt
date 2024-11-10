@@ -1,7 +1,7 @@
 --extra-index-url https://pip.twitchio.dev  
 
 # TWITCH
-twitchio[speed] @ git+https://github.com/TwitchIO/TwitchIO.git
+twitchio[starlette] @ git+https://github.com/PythonistaGuild/TwitchIO.git@dev/3.0
 
 # DISCORD
 discord.py[speed]
@@ -9,7 +9,7 @@ discord.py[speed]
 # BOT'S BASE
 asyncpg
 asyncpg-stubs
-aiohttp==3.9.5
+aiohttp
 
 # DOTA 2 
 steamio @ git+https://github.com/Aluerie/steam.py@introduce-ext.dota2

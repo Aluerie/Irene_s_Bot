@@ -3,7 +3,7 @@ from __future__ import annotations
 import platform
 from pkgutil import iter_modules
 
-__all__ = ("WORK_EXTENSIONS",)
+__all__ = ("EXTENSIONS",)
 
 try:
     import _test
@@ -36,4 +36,4 @@ def get_extensions() -> tuple[str, ...]:
         )
 
 
-WORK_EXTENSIONS = get_extensions()
+EXTENSIONS = get_extensions()

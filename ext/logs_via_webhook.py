@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, override
 import discord
 from discord.ext import tasks
 
-from bot import IrenesCog
+from bot import IrenesComponent
 from config import LOGGER_WEBHOOK
 from utils import const
 
@@ -33,7 +33,7 @@ class LoggingHandler(logging.Handler):
     def filter(self, record: logging.LogRecord) -> bool:
         """Filter out some somewhat pointless messages so we don't spam the channel as much."""
         messages_to_ignore = (
-            "Webhook ID 1116501979133399113 is rate limited.",  #todo: wrong id
+            "Webhook ID 1116501979133399113 is rate limited.",  # todo: wrong id
         )
         if any(msg in record.message for msg in messages_to_ignore):  # noqa: SIM103
             return False
@@ -45,7 +45,7 @@ class LoggingHandler(logging.Handler):
         self.cog.add_record(record)
 
 
-class LogsViaWebhook(IrenesCog):
+class LogsViaWebhook(IrenesComponent):
     """Mirroring logs to discord webhook messages.
 
     This cog is responsible for rate-limiting, formatting, fine-tuning and sending the log messages.
@@ -68,10 +68,12 @@ class LogsViaWebhook(IrenesCog):
         self.cooldown: datetime.timedelta = datetime.timedelta(seconds=5)
         self._most_recent: datetime.datetime | None = None
 
+    @override
+    def component_load(self) -> None:
         self.logging_worker.start()
 
     @override
-    def cog_unload(self) -> None:
+    def component_teardown(self) -> None:
         self.logging_worker.stop()
 
     @discord.utils.cached_property
@@ -114,12 +116,12 @@ class LogsViaWebhook(IrenesCog):
             await self.send_log_record(record)
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
     if platform.system() == "Windows":
         return
 
     cog = LogsViaWebhook(bot)
-    bot.add_cog(cog)
+    await bot.add_component(cog)
     bot.logs_via_webhook_handler = handler = LoggingHandler(cog)
     logging.getLogger().addHandler(handler)

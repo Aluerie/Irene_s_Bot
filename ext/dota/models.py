@@ -75,7 +75,7 @@ class Streamer:
         log.debug("Resetting streamer state to play_match=`None`: %s", event_msg)
         if p := self.play_match:
             p.reset()
-            self.bot.run_event("reset_streamer", event_msg)
+            self.bot.dispatch("reset_streamer", event_msg)
             if p.match_id and p.hero:
                 self.promised_match_ids[p.match_id] = p.hero
                 if not self.update_last_game.is_running():
@@ -83,7 +83,7 @@ class Streamer:
 
         elif w := self.watch_match:
             w.reset()
-            self.bot.run_event("reset_streamer", event_msg)
+            self.bot.dispatch("reset_streamer", event_msg)
 
         self.play_match = None
         self.watch_match = None
@@ -108,7 +108,7 @@ class Streamer:
             if self.rp_status != rp_status:
                 self.rp_status = rp_status
                 self.reset("Streamer went Offline")
-                self.bot.run_event("rich_presence_changed", self.rp_status.display_name)
+                self.bot.dispatch("rich_presence_changed", self.rp_status.display_name)
             return
 
         # this will bite me back one day, but "param1" is a hero level
@@ -131,7 +131,7 @@ class Streamer:
         if self.rp_status != rp_status:
             # Detected Rich Presence change;
             # only debug purpose since code still goes further
-            self.bot.run_event("rich_presence_changed", rp_status)
+            self.bot.dispatch("rich_presence_changed", rp_status)
             log.debug("RPStatus changed to `%s`", rp_status.display_name)
 
         self.rp_status = rp_status
@@ -630,14 +630,14 @@ class PlayMatch(Match):
         if self.players and all(player.is_data_ready for player in self.players.values()):
             # match data is ready
             self.is_data_ready = True
-            self.bot.run_event("match_data_ready")
+            self.bot.dispatch("match_data_ready")
             self.check_players.stop()
 
     def check_heroes(self) -> bool:
         if self.players and all(bool(player.hero) for player in self.players.values()):
             self.is_hero_ready = True
             self.hero = next(player.hero for player in self.players.values() if player.account_id == self.account_id)
-            self.bot.run_event("match_hero_ready")
+            self.bot.dispatch("match_hero_ready")
             return True
         else:
             return False
@@ -733,13 +733,13 @@ class WatchMatch(Match):
         if self.players and all(player.is_data_ready for player in self.players.values()):
             # match data is ready
             self.is_data_ready = True
-            self.bot.run_event("match_data_ready")
+            self.bot.dispatch("match_data_ready")
             self.check_players.stop()
 
     def check_heroes(self) -> bool:
         if self.players and all(bool(player.hero) for player in self.players.values()):
             self.is_hero_ready = True
-            self.bot.run_event("match_hero_ready")
+            self.bot.dispatch("match_hero_ready")
             return True
         else:
             return False
