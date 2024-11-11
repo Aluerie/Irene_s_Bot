@@ -58,7 +58,7 @@ class IrenesBot(commands.Bot):
             List of channel names (names, not ids!).
 
         """
-        self.prefixes = ("!", "?", "$")
+        self.prefixes: tuple[str, ...] = ("!", "?", "$")
         super().__init__(
             client_id=config.TTV_DEV_CLIENT_ID,
             client_secret=config.TTV_DEV_CLIENT_SECRET,
