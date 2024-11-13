@@ -59,7 +59,7 @@ class ChannelManagement(IrenesComponent):
 
         # 2. Argument "game_name" is provided
         # Set the game to it
-        if not ctx.author.is_mod:  # type: ignore # the dev said it's fine
+        if not ctx.chatter.moderator:
             # a. non-mod case
             await ctx.send(f"Only moderators are allowed to change game name {const.FFZ.peepoPolice}")
             return
@@ -73,7 +73,11 @@ class ChannelManagement(IrenesComponent):
 
         # c. specified game
         # specific exception so I can type "!game dota" without 2;
-        game_name = game_name if game_name != "dota" else "Dota 2"
+        game_keywords = {
+            "dota": "Dota 2",
+            "er": "Elden Ring",
+        }
+        game_name = game_keywords.get(game_name, game_name)
 
         game = next(iter(await self.bot.fetch_games(names=[game_name])), None)
         if not game:
@@ -88,20 +92,21 @@ class ChannelManagement(IrenesComponent):
     async def update_title(self, streamer: twitchio.PartialUser, title: str) -> None:
         """Helper function to update the streamer's title."""
         self.title_updated_dt = datetime.datetime.now(datetime.UTC)
-        try:
-            await streamer.modify_channel(title=title)
-        except Exception as error:
-            if "Title is too long" in str(error):
-                msg = f"Sorry, title is too long: {len(title)}/140"
-                raise errors.UsageError(msg)
-            else:
-                raise errors.SomethingWentWrong(str(error))
-        else:
-            # success
-            return
+        await streamer.modify_channel(title=title)
+        # try:
+        #     await streamer.modify_channel(title=title)
+        # except Exception as error:
+        #     if "Title is too long" in str(error):
+        #         msg = f"Sorry, title is too long: {len(title)}/140"
+        #         raise errors.UsageError(msg)
+        #     else:
+        #         raise errors.SomethingWentWrong(str(error))
+        # else:
+        #     # success
+        #     return
 
     @commands.group(name="title", invoke_fallback=True)
-    async def title_group(self, ctx: commands.Context, *, title: str | None = None) -> None:
+    async def title_group(self, ctx: commands.Context, *, title: str = '') -> None:
         """Callback for !title group commands.
 
         Can be used with subcommands. But when used on its - it either shows the title or updates it,
@@ -112,30 +117,26 @@ class ChannelManagement(IrenesComponent):
             * !title - shows current title.
             * !title Hello World - title changes to "Hello World" (if mod)
         """
-        streamer = await ctx.channel.user()
 
         if not title:
             # 1. No argument
             # respond with current game name the channel is playing
             channel_info = await ctx.broadcaster.fetch_channel_info()
             await ctx.send(channel_info.title)
-            return
-
         # 2. Argument "title" is provided
-        if not ctx.author.is_mod:  # type: ignore # the dev said it's fine
+        elif not ctx.chatter.moderator:
             # a. non-mod case: give a warning for the chatter
             await ctx.send(f"Only moderators are allowed to change title {const.FFZ.peepoPolice}")
         else:
             # b. mod case: actually update the title
-            await self.update_title(streamer, title=title)
+            await self.update_title(ctx.broadcaster, title=title)
             await ctx.send(f'{const.STV.donkHappy} Changed title to "{title}"')
 
     @commands.is_moderator()
     @title_group.command(name="set")
     async def title_set(self, ctx: commands.Context, *, title: str) -> None:
         """Set the title for the stream."""
-        streamer = await ctx.channel.user()
-        await self.update_title(streamer, title=title)
+        await self.update_title(ctx.broadcaster, title=title)
         await ctx.send(f'{const.STV.donkHappy} Set title to "{title}"')
 
     @commands.is_moderator()
@@ -161,10 +162,9 @@ class ChannelManagement(IrenesComponent):
         """
         title: str | None = await self.bot.pool.fetchval(query, offset)
         if title is None:
-            await ctx.send("No change: the database doesn't keep such an old title.")
+            await ctx.send("No change: the database doesn't keep such title.")
         else:
-            streamer = await ctx.channel.user()
-            await self.update_title(streamer, title=title)
+            await self.update_title(ctx.broadcaster, title=title)
             await ctx.send(f"Set the title to {formats.ordinal(offset)} in history: {title}")
 
     @commands.is_moderator()
@@ -235,7 +235,7 @@ class ChannelManagement(IrenesComponent):
 
         I guess stream end is a good event for it - it's rare enough and we don't need old titles after stream is over.
         """
-        cutoff_dt = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=2)
+        cutoff_dt = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=30)
         query = "DELETE FROM ttv_stream_titles WHERE edit_time < $1"
         await self.bot.pool.execute(query, cutoff_dt)
 

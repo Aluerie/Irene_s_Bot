@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS ttv_stream_titles (
     edit_time TIMESTAMPTZ DEFAULT (NOW() at time zone 'utc')
 );
 
+
 CREATE TABLE IF NOT EXISTS ttv_tokens (
     user_id TEXT PRIMARY KEY, 
     token TEXT NOT NULL, 

@@ -22,7 +22,7 @@ class TranslateError(IrenesBotError):
         super().__init__(f"Google Translate responded with HTTP Status Code {status_code}")
 
 
-class CheckError(IrenesBotError):
+class GuardError(IrenesBotError):
     """My own `commands.CheckFailure` Error.
 
     Used in my own command checks.

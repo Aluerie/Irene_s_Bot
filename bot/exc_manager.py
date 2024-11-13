@@ -73,8 +73,8 @@ class ExceptionManager:
 
         It is not recommended to call this yourself, call `register_error` instead.
         """
-        if platform.system() == "Windows":
-            return
+        # if platform.system() == "Windows":
+        #     return
 
         code_chunks = list(self._yield_code_chunks(traceback))
 

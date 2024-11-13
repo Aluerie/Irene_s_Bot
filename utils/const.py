@@ -72,6 +72,7 @@ class STV(StrEnum):
     ApuBritish = "ApuBritish"
     Cinema = "Cinema"
     DankApprove = "DankApprove"
+    dankFix = "dankFix"
     dankHey = "dankHey"
     DankL = "DankL"
     DankMods = "DankMods"

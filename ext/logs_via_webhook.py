@@ -3,15 +3,13 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import platform
 import textwrap
 from typing import TYPE_CHECKING, override
 
 import discord
-from discord.ext import tasks
+from twitchio.ext import commands
 
-from bot import IrenesComponent
-from config import LOGGER_WEBHOOK
+from bot import IrenesComponent, irenes_loop
 from utils import const
 
 if TYPE_CHECKING:
@@ -33,7 +31,7 @@ class LoggingHandler(logging.Handler):
     def filter(self, record: logging.LogRecord) -> bool:
         """Filter out some somewhat pointless messages so we don't spam the channel as much."""
         messages_to_ignore = (
-            "Webhook ID 1116501979133399113 is rate limited.",  # todo: wrong id
+            "Webhook ID 1280488051776163903 is rate limited.",
         )
         if any(msg in record.message for msg in messages_to_ignore):  # noqa: SIM103
             return False
@@ -51,13 +49,13 @@ class LogsViaWebhook(IrenesComponent):
     This cog is responsible for rate-limiting, formatting, fine-tuning and sending the log messages.
     """
 
-    # TODO: ADD MORE STUFF
     AVATAR_MAPPING: Mapping[str, str] = {
         "bot.bot": "https://i.imgur.com/6XZ8Roa.png",  # lady Noir
         "exc_manager": "https://em-content.zobj.net/source/microsoft/378/sos-button_1f198.png",
         "twitchio.ext.eventsub.ws": const.Logo.Twitch,
         "twitchio.websocket": const.Logo.Twitch,
     }
+    DOLPHIN_IMAGE: str = "https://em-content.zobj.net/source/microsoft/407/dolphin_1f42c.png"
 
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
@@ -76,10 +74,17 @@ class LogsViaWebhook(IrenesComponent):
     async def component_teardown(self) -> None:
         self.logging_worker.stop()
 
-    @discord.utils.cached_property
-    def logger_webhook(self) -> discord.Webhook:
-        """A webhook in hideout's #logger channel."""
-        return self.bot.webhook_from_url(LOGGER_WEBHOOK)
+    @commands.Component.listener(name="ready")
+    async def announce_reloaded(self) -> None:
+        """Announce that bot is successfully reloaded/restarted."""
+
+        # it looks like the `log.info` from `bot.py` doesn't proc before LogsViaWebhook is loaded
+        await self.bot.logger_webhook.send(
+            content=f"Logged in as `user_id={self.bot.bot_id}`",
+            username="Irene's Dolphin",
+            avatar_url=self.DOLPHIN_IMAGE,
+        )
+        await self.deliver(f"{const.STV.hi} the bot is reloaded.")
 
     def add_record(self, record: logging.LogRecord) -> None:
         """Add a record to a logging queue."""
@@ -98,9 +103,9 @@ class LogsViaWebhook(IrenesComponent):
         msg = textwrap.shorten(f"{emoji} {discord.utils.format_dt(dt, style="T")} {record.message}", width=1995)
         avatar_url = self.AVATAR_MAPPING.get(record.name, discord.utils.MISSING)
         username = record.name.replace("discord", "disсοrd")  # cSpell: ignore disсοrd  # noqa: RUF003
-        await self.logger_webhook.send(msg, username=username, avatar_url=avatar_url)
+        await self.bot.logger_webhook.send(msg, username=username, avatar_url=avatar_url)
 
-    @tasks.loop(seconds=0.0)
+    @irenes_loop(seconds=0.0)
     async def logging_worker(self) -> None:
         """Task responsible for mirroring logging messages to a discord webhook."""
         record = await self._logging_queue.get()
@@ -118,7 +123,8 @@ class LogsViaWebhook(IrenesComponent):
 
 async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    if platform.system() == "Windows":
+    if not __name__ in bot.extensions:
+        # check if the extension is listed in extensions
         return
 
     cog = LogsViaWebhook(bot)

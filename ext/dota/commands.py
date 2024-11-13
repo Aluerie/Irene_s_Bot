@@ -82,23 +82,23 @@ class DotaCommands(IrenesComponent):
     async def check_streamers_rich_presence(self) -> None:
         await self.streamer.update()
 
-    @commands.Cog.event(event="event_rich_presence_changed")  # type: ignore # lib issue
+    @commands.Component.listener("event_rich_presence_changed")
     async def rich_presence_changed(self, status: RPStatus) -> None:
         await self.debug_send(f"RP Change: {status}")
 
-    @commands.Cog.event(event="event_reset_streamer")  # type: ignore # lib issue
+    @commands.Component.listener("event_reset_streamer")
     async def reset_streamer(self, event_msg: str) -> None:
         await self.debug_send(f"Reset: {event_msg}")
 
-    @commands.Cog.event(event="event_match_data_ready")  # type: ignore # lib issue
+    @commands.Component.listener("event_match_data_ready")
     async def announce_data_ready(self) -> None:
         await self.debug_send(f"Game Data Ready! Commands have all the data now. {const.STV.wickedchad}")
 
-    @commands.Cog.event(event="event_match_hero_ready")  # type: ignore # lib issue
+    @commands.Component.listener("event_match_hero_ready")
     async def announce_hero_ready(self) -> None:
         await self.debug_send(f"Hero Info Ready! Commands now have hero names. {const.STV.wickedchad}")
 
-    # @commands.Cog.event(event="event_check_last_games")  # type-ignore # lib issue
+    # @commands.Component.listener("event_check_last_games")
     # async def start_checking_match_outcome(self, match_id: int, hero: Hero) -> None:
     #     await self.debug_send("Game ended. Checking data for it!")
 

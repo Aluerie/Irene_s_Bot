@@ -41,32 +41,22 @@ class Timers(IrenesComponent):
             # "if you have nothing to do Sadge you can try !randompasta. Maybe you'll like it Okayge",
         ]
         self.lines_count: int = 0
-        self.check_stream_online.start()
 
-    @irenes_loop(count=1)
-    async def check_stream_online(self) -> None:
-        """Check if the stream is live on bot's reboot."""
-        stream = next(iter(await self.bot.fetch_streams(user_ids=[const.UserID.Irene])), None)  # None if offline
-        if stream:
-            self.timer_task.start()
-
-    @commands.Component.listener(name="stream_online")
-    async def event_eventsub_notification_stream_start(self, _: twitchio.StreamOnline) -> None:
-        """Stream started (went live)."""
+    @commands.Component.listener(name="irene_online")
+    async def stream_online_start_the_task(self) -> None:
+        """Start the timer task when stream goes online."""
         self.timer_task.start()
 
-    @commands.Component.listener(name="stream_offline")
-    async def event_eventsub_notification_stream_end(self, _: twitchio.StreamOffline) -> None:
-        """Stream ended (went offline)."""
+    @commands.Component.listener(name="irene_offline")
+    async def stream_offline_cancel_the_task(self) -> None:
+        """Cancel the timer task when stream goes offline."""
         self.timer_task.cancel()
 
     @commands.Component.listener(name="message")
     async def count_messages(self, message: twitchio.ChatMessage) -> None:
         """Count messages between timers so the bot doesn't spam fill up an empty chat."""
         if message.chatter.name in const.Bots:
-            # * do not count messages from the bot itself
-            # other bots soon^tm will stop talking in my chat at all so this is a fine check;
-            # No need for `message.author.name.lower() in const.Bot` condition
+            # do not count messages from known bot accounts
             return
 
         self.lines_count += 1

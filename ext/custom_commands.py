@@ -50,14 +50,12 @@ class CustomCommands(IrenesComponent):
         for row in rows:
             self.command_cache.setdefault(row["streamer_id"], {})[row["command_name"]] = row["content"]
 
-    # TODO: look how twitchio does this, they are likely more efficient.
     @commands.Component.listener(name="message")
     async def event_message(self, message: twitchio.ChatMessage) -> None:
         """Listen to prefix custom commands.
 
         This is a bit different from twitchio commands. This one is just for this cog.
         """
-        # An event inside a cog!
         if not message.text.startswith(self.bot.prefixes) or message.chatter.id == const.UserID.Bot:
             return
 
@@ -76,10 +74,7 @@ class CustomCommands(IrenesComponent):
                     message=command_response,
                 )
 
-    async def cmd_group(self, ctx: commands.Context) -> None:
-        """Callback for custom command management group "cmd"."""
-        await ctx.send("Sorry, you should use it with subcommands add, del, edit")
-
+    @commands.is_moderator()
     @commands.group(invoke_fallback=True)
     async def cmd(self, ctx: commands.Context) -> None:
         """Group command to define cmd"""

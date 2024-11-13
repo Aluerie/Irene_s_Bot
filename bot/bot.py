@@ -11,9 +11,10 @@ from twitchio.ext import commands
 
 import config
 from ext import EXTENSIONS
-from utils import const
+from utils import const, errors
 from utils.dota import Dota2Client
 
+from .bases import irenes_loop
 from .exc_manager import ExceptionManager
 
 if TYPE_CHECKING:
@@ -70,10 +71,13 @@ class IrenesBot(commands.Bot):
         self.database: asyncpg.Pool[asyncpg.Record] = pool
         self.pool: PoolTypedWithAny = pool  # type: ignore # asyncpg typehinting crutch, read `utils.database` for more
         self.session: ClientSession = session
+        self.extensions: tuple[str, ...] = EXTENSIONS
 
         self.exc_manager = ExceptionManager(self)
         self.repo = "https://github.com/Aluerie/Irene_s_Bot"
         self.dota = Dota2Client(self)
+
+        self.irene_online: bool = False
 
     # def show_oauth(self) -> None:
     #     oauth = twitchio.authentication.OAuth(
@@ -104,6 +108,8 @@ class IrenesBot(commands.Bot):
                 "moderator:read:followers",
                 "moderator:manage:shoutouts",
                 "moderator:manage:announcements",
+                "moderator:manage:banned_users",
+                "clips:edit",
             ]
         )
         link = f"http://localhost:4343/oauth?scopes={scopes}&force_verify=true"
@@ -114,9 +120,9 @@ class IrenesBot(commands.Bot):
             [
                 "channel:bot",
                 "channel:read:ads",
-                "channel:moderate",  # TODO: ??? WHY I CANT FIND THIS SCOPE
+                "channel:moderate",
                 "channel:read:redemptions",
-                # "channel:manage:broadcast",
+                "channel:manage:broadcast",
             ]
         )
         link = f"http://localhost:4343/oauth?scopes={scopes}&force_verify=true"
@@ -124,13 +130,14 @@ class IrenesBot(commands.Bot):
 
     @override
     async def setup_hook(self) -> None:
-        # * some twitchio tokens magic
-        # * uncomment the following three lines when creating tokens (otherwise they should be commented)
+        # Twitchio tokens magic
+        # Uncomment the following three lines and run the bot when creating tokens (otherwise they should be commented)
+        # This will make the bot update the database with new tokens.
         # self.print_bot_oauth()
         # self.print_broadcaster_oauth()
         # return
 
-        for ext in EXTENSIONS:
+        for ext in self.extensions:
             await self.load_module(ext)
 
         # it's just a personal bot :)
@@ -175,6 +182,8 @@ class IrenesBot(commands.Bot):
         sub = eventsub.ChannelUpdateSubscription(broadcaster_user_id=broadcaster)
         await self.subscribe_websocket(payload=sub)
 
+        self.check_if_online.start()
+
     @override
     async def add_token(self, token: str, refresh: str) -> twitchio.authentication.ValidateTokenPayload:
         # Make sure to call super() as it will add the tokens internally and return us some data...
@@ -204,57 +213,106 @@ class IrenesBot(commands.Bot):
     # @override  # TODO: why it's not an override
     async def event_ready(self) -> None:
         log.info("Irene_s_Bot is ready as bot_id = %s", self.bot_id)
-        if "ext.dota" in EXTENSIONS:
+        if "ext.dota" in self.extensions:
             await self.dota.wait_until_ready()
 
-    # @override
-    # async def event_command_error(self, payload: commands.CommandErrorPayload) -> None:
-    #     """Called when error happens during command invoking."""
-    #     log.debug("%s", payload.exception)
+    @override
+    async def event_command_error(self, payload: commands.CommandErrorPayload) -> None:
+        """Called when error happens during command invoking."""
 
-    #     ctx = payload.context
-    #     error = payload.exception
-    #     # we aren't interested in the chain traceback:
-    #     error = error.original if isinstance(error, commands.CommandInvokeError) and error.original else error
+        ctx = payload.context
+        error = payload.exception
 
-    #     match error:
-    #         case errors.IrenesBotError():
-    #             # errors defined by me - just send the string
-    #             await ctx.send(str(error))
-    #         case commands.CommandNotFound():
-    #             #  otherwise we just spam console with commands from other bots and from my event thing
-    #             pass
-    #         # case commands.CommandOnCooldown(): # TODO: WAIT TILL IMPLEMENTED
-    #         #     await ctx.send(
-    #         #         f"Command {ctx.prefix}{error.command.name} is on cooldown! Try again in {error.retry_after:.0f} sec."
-    #         #     )
+        # we aren't interested in the chain traceback:
+        error = error.original if isinstance(error, commands.CommandInvokeError) and error.original else error
 
-    #         # case commands.BadArgument():
-    #         #     log.warning("%s %s", error.name, error)
-    #         #     await ctx.send(f"Couldn't find any {error.name} like that")
-    #         # case commands.ArgumentError():  # | commands.CheckFailure(): # TODO: WHAT'S NEW THING ???
-    #         #     await ctx.send(str(error))
+        match error:
+            case errors.IrenesBotError():
+                # errors defined by me - just send the string
+                await ctx.send(str(error))
+            case commands.CommandNotFound():
+                #  otherwise we just spam console with commands from other bots and from my event thing
+                log.info("CommandNotFound: %s", payload.exception)
+            case commands.GuardFailure():
+                guard_mapping = {
+                    "is_moderator.<locals>.predicate": (
+                        f"Only moderators are allowed to use this command {const.FFZ.peepoPolice}"
+                    ),
+                    "is_vps.<locals>.predicate": (
+                        f"Only production bot allows usage of this command {const.FFZ.peepoPolice}"
+                    ),
+                    "is_owner.<locals>.predicate": (
+                        f"Only Irene is allowed to use this command {const.FFZ.peepoPolice}"
+                    ),
+                    "is_online.<locals>.predicate": (
+                        f"This commands is only allowed when stream is online {const.FFZ.peepoPolice}"
+                    ),
+                }
+                await ctx.send(guard_mapping.get(error.guard.__qualname__, str(error)))
+            case twitchio.HTTPException():
+                # log.error("%s", error.__class__.__name__, exc_info=error)
+                await ctx.send(
+                    f"{error.extra.get('error', 'Error')} {error.extra.get('status', 'XXX')}: "
+                    f"{error.extra.get('message', 'Unknown')} {const.STV.dankFix}"
+                )
+            case commands.MissingRequiredArgument():
+                await ctx.send(
+                    f'You need to provide "{error.param.name}" argument for this command {const.FFZ.peepoPolice}'
+                )
 
-    #         # case commands.MissingRequiredArgument():
-    #         #     await ctx.send(f"Missing required argument(-s): {error}")
-    #         case _:
-    #             command_name = getattr(ctx.command, "name", "unknown")
+            # case commands.CommandOnCooldown(): # TODO: WAIT TILL IMPLEMENTED
+            #     await ctx.send(
+            #         f"Command {ctx.prefix}{error.command.name} is on cooldown! Try again in {error.retry_after:.0f} sec."
+            #     )
 
-    #             embed = discord.Embed(description=f"Exception {error} in !{command_name} command: {command_name}:")
-    #             await self.exc_manager.register_error(error, embed=embed)
+            # case commands.BadArgument():
+            #     log.warning("%s %s", error.name, error)
+            #     await ctx.send(f"Couldn't find any {error.name} like that")
+            # case commands.ArgumentError():
+            #     await ctx.send(str(error))
 
-    # @override
-    # async def event_error(self, payload: twitchio.EventErrorPayload) -> None:
-    #     embed = (
-    #         discord.Embed(description=f"Exception {payload.error} in event")
-    #         .add_field(name="Exception", value=payload.error.__class__.__name__)
-    #         .add_field(name="Listener", value=payload.listener.__qualname__)
-    #     )
-    #     await self.exc_manager.register_error(payload.error, embed=embed)
+            case _:
+                await ctx.send(f"{error.__class__.__name__}: {error}")
+
+                command_name = getattr(ctx.command, "name", "unknown")
+
+                embed = (
+                    discord.Embed(
+                        colour=ctx.chatter.colour.code if ctx.chatter.colour else 0x890620,
+                        title=f"Error in `!{command_name}`",
+                    )
+                    .add_field(
+                        name="Command Args",
+                        value=(
+                            "```py\n" + "\n".join(f"[{name}]: {value!r}" for name, value in ctx.kwargs.items()) + "```"
+                            if ctx.kwargs
+                            else "```py\nNo arguments```"
+                        ),
+                        inline=False,
+                    )
+                    .set_author(
+                        name=ctx.chatter.display_name,
+                        icon_url=(await ctx.chatter.user()).profile_image,
+                    )
+                    .set_footer(
+                        text=f"event_command_error: {command_name}",
+                        icon_url=(await ctx.broadcaster.user()).profile_image,
+                    )
+                )
+                await self.exc_manager.register_error(error, embed=embed)
+
+    @override
+    async def event_error(self, payload: twitchio.EventErrorPayload) -> None:
+        embed = (
+            discord.Embed()
+            .add_field(name="Exception", value=f"`{payload.error.__class__.__name__}`")
+            .set_footer(text=f"event_error: `{payload.listener.__qualname__}`")
+        )
+        await self.exc_manager.register_error(payload.error, embed=embed)
 
     @override
     async def start(self) -> None:
-        if "ext.dota" in EXTENSIONS:
+        if "ext.dota" in self.extensions:
             await asyncio.gather(
                 super().start(),
                 self.dota.login(),
@@ -300,3 +358,25 @@ class IrenesBot(commands.Bot):
     def webhook_from_url(self, url: str) -> discord.Webhook:
         """A shortcut function with filled in discord.Webhook.from_url args."""
         return discord.Webhook.from_url(url=url, session=self.session)
+
+    @discord.utils.cached_property
+    def logger_webhook(self) -> discord.Webhook:
+        """A webhook in hideout's #logger channel."""
+        return self.webhook_from_url(config.LOGGER_WEBHOOK)
+
+    async def irene_stream(self) -> twitchio.Stream | None:
+        return next(iter(await self.fetch_streams(user_ids=[const.UserID.Irene])), None)
+
+    @irenes_loop(count=1)
+    async def check_if_online(self) -> None:
+        if await self.irene_stream():
+            self.dispatch("irene_online")
+            self.irene_online = True
+
+    async def event_stream_online(self, _: twitchio.StreamOnline) -> None:
+        self.dispatch("irene_online")
+        self.irene_online = True
+
+    async def event_stream_offline(self, _: twitchio.StreamOffline) -> None:
+        self.dispatch("irene_offline")
+        self.irene_online = False

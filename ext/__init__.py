@@ -11,9 +11,8 @@ try:
     TEST_EXTENSIONS = _test.TEST_EXTENSIONS
     TEST_USE_ALL_EXTENSIONS = _test.TEST_USE_ALL_EXTENSIONS
 except ModuleNotFoundError:
-    _test = None
-    TEST_EXTENSIONS = ()  # type: ignore
-    TEST_USE_ALL_EXTENSIONS = True  # type: ignore
+    TEST_EXTENSIONS: tuple[str, ...] = ()  # pyright: ignore[reportConstantRedefinition]
+    TEST_USE_ALL_EXTENSIONS: bool = True  # pyright: ignore[reportConstantRedefinition]
 
 # EXTENSIONS
 
@@ -26,14 +25,21 @@ DISABLED_EXTENSIONS = (
 
 def get_extensions() -> tuple[str, ...]:
     if platform.system() == "Windows" and not TEST_USE_ALL_EXTENSIONS:
-        # assume testing
+        # assume testing specific extensions from `_test.py`
         return tuple(f"{__package__}.{ext}" for ext in TEST_EXTENSIONS)
     else:
-        return tuple(
+        # assume running full bot functionality (besides `DISABLED_EXTENSIONS`)
+
+        # I want "core_extensions" to be loaded asap
+        core_extensions: tuple[str, ...] = ("ext.logs_via_webhook",)
+        all_extensions = tuple(
             module.name
             for module in iter_modules(__path__, f"{__package__}.")
             if module.name not in DISABLED_EXTENSIONS
         )
+        temp = tuple(set(all_extensions).difference(core_extensions))
+
+        return core_extensions + temp
 
 
 EXTENSIONS = get_extensions()

@@ -23,12 +23,6 @@ class Alerts(IrenesComponent):
     Mostly, EventSub events that are nice to have a notification in twitch chat for.
     """
 
-    # TODO: 3.0 will fix ES events so the typehint gonna be correct like this:
-    # (self,  payload: eventsub.CustomRewardRedemptionAddUpdateData)
-    # and we wont need this ugly first line
-    # "payload: eventsub.CustomRewardRedemptionAddUpdateData = event.data  # type: ignore"
-    # fix it everywhere
-
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.ban_list: set[str] = set()

@@ -3,12 +3,12 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from twitchio.ext import commands
 
 from bot import IrenesComponent
-from utils import checks
+from utils import const, guards
 
 if TYPE_CHECKING:
     from bot import IrenesBot
@@ -16,14 +16,15 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+def to_extension(_: commands.Context, extension: str) -> str:
+    return f"ext.{extension}"
+
+
 class Development(IrenesComponent):
     """Dev Only Commands."""
 
-    if TYPE_CHECKING:
-        ext_alias_mapping: dict[str, str]
-
-    @checks.is_vps()
-    @commands.is_owner()
+    @guards.is_vps()
+    # @commands.is_owner()
     @commands.command(aliases=["kill"])
     async def maintenance(self, ctx: commands.Context) -> None:
         """Kill the bot process on VPS.
@@ -42,7 +43,7 @@ class Development(IrenesComponent):
             # it might not go off
             await ctx.send("Something went wrong.")
 
-    @checks.is_vps()
+    @guards.is_vps()
     @commands.is_owner()
     @commands.command(aliases=["restart"])
     async def reboot(self, ctx: commands.Context) -> None:
@@ -60,29 +61,23 @@ class Development(IrenesComponent):
             # it might not go off
             await ctx.send("Something went wrong.")
 
-    @checks.is_vps()
     @commands.is_owner()
     @commands.command()
-    async def unload(self, ctx: commands.Context, *, extension: str) -> None:
-        ext = self.ext_alias_mapping[extension.lower()]
-        await self.bot.unload_module(ext)
-        await ctx.send(f"Successfully unloaded `{ext}`.")
+    async def unload(self, ctx: commands.Context, *, extension: Annotated[str, to_extension]) -> None:
+        await self.bot.unload_module(extension)
+        await ctx.send(f"{const.STV.DankApprove} unloaded {extension}")
 
-    @checks.is_vps()
     @commands.is_owner()
     @commands.command()
-    async def reload(self, ctx: commands.Context, *, extension: str) -> None:
-        ext = self.ext_alias_mapping[extension.lower()]
-        await self.bot.reload_module(ext)
-        await ctx.send(f"Successfully reloaded `{ext}`.")
+    async def reload(self, ctx: commands.Context, *, extension: Annotated[str, to_extension]) -> None:
+        await self.bot.reload_module(extension)
+        await ctx.send(f"{const.STV.DankApprove} reloaded {extension}")
 
-    @checks.is_vps()
     @commands.is_owner()
     @commands.command()
-    async def load(self, ctx: commands.Context, *, extension: str) -> None:
-        ext = self.ext_alias_mapping[extension.lower()]
-        await self.bot.load_module(ext)
-        await ctx.send(f"Successfully loaded `{ext}`.")
+    async def load(self, ctx: commands.Context, *, extension: Annotated[str, to_extension]) -> None:
+        await self.bot.load_module(extension)
+        await ctx.send(f"{const.STV.DankApprove} loaded {extension}")
 
 
 async def setup(bot: IrenesBot) -> None:

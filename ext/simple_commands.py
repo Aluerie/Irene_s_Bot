@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import random
+import unicodedata
 from typing import TYPE_CHECKING
 
 import twitchio  # noqa: TCH002
@@ -10,7 +11,7 @@ from twitchio.ext import commands
 
 import config
 from bot import IrenesComponent
-from utils import const, formats
+from utils import const, formats, guards
 
 if TYPE_CHECKING:
     from bot import IrenesBot
@@ -54,6 +55,7 @@ class DefaultCommands(IrenesComponent):
     # 2. MORE OR LESS STABLE COMMANDS
     # (sorted alphabetically)
 
+    @guards.is_online()
     @commands.command()
     async def clip(self, ctx: commands.Context) -> None:
         """Create a clip for last 30 seconds of the stream."""
@@ -63,7 +65,7 @@ class DefaultCommands(IrenesComponent):
     @commands.command(name="commands", aliases=["help"])
     async def command_list(self, ctx: commands.Context) -> None:
         """Get a list of bot commands."""
-        await ctx.send('Not implemented yet, for now use "!cmd list"')
+        await ctx.send("Not implemented yet.")
 
     @commands.command()
     async def discord(self, ctx: commands.Context) -> None:
@@ -87,7 +89,7 @@ class DefaultCommands(IrenesComponent):
         await ctx.send(f"{const.STV.hello} @{ctx.chatter.display_name} {const.STV.yo}")
 
     @commands.command()
-    async def love(self, ctx: commands.Context, *, arg: str) -> None:  # TODO: maybe twitchio.User | str
+    async def love(self, ctx: commands.Context, *, arg: str) -> None:
         """Measure love between chatter and `arg`.
 
         arg can be a user or anything else.
@@ -107,29 +109,18 @@ class DefaultCommands(IrenesComponent):
                 emote = const.STV.DankL
             return love, emote
 
-        author_mention = ctx.chatter.mention
-        chatter = ctx.channel.get_chatter(arg.lstrip("@"))
-
-        if not chatter:
-            # NOT USER, just object case
-            love, emote = choose_love_emote()
-            await ctx.send(f"{love}% love between {author_mention} & {arg} {emote}")
-            return
-
-        chatter_display_name = getattr(chatter, "display_name")
-        if not chatter_display_name:
-            chatter = await chatter.user()
-            chatter_display_name = chatter.display_name
-
-        if chatter_display_name.lower() in const.Bots:
+        # chr(917504) is a weird "unknown" invisible symbol 7tv appends to the message
+        # and the rest is just to get a possible clear name in case chatter was mentioning one
+        potential_name = arg.replace(chr(917504), "").strip().removeprefix("@").lower()
+        if potential_name in const.Bots:
             await ctx.send("Silly organic, bots cannot know love BibleThump")
-        elif chatter.name == ctx.chatter.name:
+        elif potential_name == ctx.chatter.name:
             await ctx.send("pls")
-        elif chatter.name == const.LowerName.Irene:
-            await ctx.send(f"The {author_mention}'s love for our beloved Irene transcends all")
+        elif potential_name == const.LowerName.Irene:
+            await ctx.send(f"The {ctx.chatter.mention}'s love for our beloved Irene transcends all")
         else:
             love, emote = choose_love_emote()
-            await ctx.send(f"{love}% love between {author_mention} and @{chatter_display_name} {emote}")
+            await ctx.send(f"{love}% love between {ctx.chatter.mention} and {arg} {emote}")
 
     @commands.command(aliases=["lorem", "ipsum"])
     async def loremipsum(self, ctx: commands.Context) -> None:
@@ -246,9 +237,9 @@ class DefaultCommands(IrenesComponent):
             f"{const.DIGITS[1]} {const.FFZ.monkaGIGA} ... The trigger is pulled... ",
         ]:
             await ctx.send(phrase)
-            await asyncio.sleep(0.77)
+            await asyncio.sleep(0.87)
 
-        if ctx.author.is_mod:  # type: ignore
+        if ctx.chatter.moderator:
             # Special case: we will not kill any moderators
             await ctx.send(f"Revolver malfunctions! {mention} is miraculously alive! {const.STV.PogChampPepe}")
         elif random.randint(0, 1):
@@ -263,6 +254,7 @@ class DefaultCommands(IrenesComponent):
                 reason="Lost in !russianroulette",
             )
 
+    @guards.is_online()
     @commands.is_moderator()
     @commands.command(aliases=["so"])
     async def shoutout(self, ctx: commands.Context, user: twitchio.User) -> None:
@@ -280,6 +272,8 @@ class DefaultCommands(IrenesComponent):
         async with self.bot.session.get(url) as resp:
             msg = await resp.text()
 
+        if not resp.ok:
+            answer = f"Irene needs to login + authorize {const.STV.dankFix}"
         if msg == "User is currently not playing any music on Spotify.":
             answer = f"{const.STV.Erm} No music is being played"
         else:
@@ -294,10 +288,9 @@ class DefaultCommands(IrenesComponent):
     @commands.command()
     async def uptime(self, ctx: commands.Context) -> None:
         """Get stream uptime."""
-        streamer = await ctx.channel.user()
-        stream = next(iter(await self.bot.fetch_streams(user_ids=[streamer.id])), None)  # None if offline
+        stream = await self.bot.irene_stream()
         if stream is None:
-            await ctx.send(f"The stream is offline {const.BTTV.Offline}")
+            await ctx.send(f"Stream is offline {const.BTTV.Offline}")
         else:
             uptime = datetime.datetime.now(datetime.UTC) - stream.started_at
             await ctx.send(f"{formats.timedelta_to_words(uptime)} {const.STV.peepoDapper}")
@@ -305,7 +298,7 @@ class DefaultCommands(IrenesComponent):
     @commands.command(aliases=["seppuku"])
     async def vanish(self, ctx: commands.Context) -> None:
         """Allows for chatters to vanish from the chat by time-outing themselves."""
-        if ctx.chatter._is_moderator:  # TODO: PRIVATE MONKA
+        if ctx.chatter.moderator:
             if "seppuku" in ctx.message.text:
                 msg = f"Emperor Kappa does not allow you this honour, {ctx.chatter.mention} (bcs you're a moderator)"
             else:
@@ -323,6 +316,33 @@ class DefaultCommands(IrenesComponent):
     async def vods(self, ctx: commands.Context) -> None:
         """Get the link to youtube vods archive."""
         await ctx.send(f"youtube.com/@AluerieVODS/ {const.STV.Cinema}")
+
+    @commands.command(aliases=["char"])
+    async def charinfo(self, ctx: commands.Context, *, characters: str) -> None:
+        """Shows information about character(-s).
+
+        Only up to a 10 characters at a time though.
+
+        Parameters
+        ----------
+        characters
+            Input up to 10 characters to get format info about.
+
+        """
+
+        def to_string(c: str) -> str:
+            name = unicodedata.name(c, None)
+            name = f"\\N{{{name}}}" if name else "Name not found."
+            return name
+
+        names = " ".join(to_string(c) for c in characters[:10])
+        if len(characters) > 10:
+            names += "(Output was too long: displaying only first 10 chars)"
+        await ctx.send(names)
+
+    @commands.command(aliases=["id", "twitchid"])
+    async def twitch_id(self, ctx: commands.Context, *, user: twitchio.User) -> None:
+        await ctx.send(f"Twitch ID for {user.mention}: {user.id}")
 
 
 async def setup(bot: IrenesBot) -> None:
