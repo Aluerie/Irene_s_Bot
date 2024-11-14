@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from discord import Embed
 
@@ -23,17 +23,24 @@ class EmoteChecker(IrenesComponent):
 
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
+
+    @override
+    async def component_load(self) -> None:
         self.check_emotes.start()
+
+    @override
+    async def component_teardown(self) -> None:
+        self.check_emotes.cancel()
 
     async def send_error_embed(self, emote: str, service: str, colour: int) -> None:
         """Helper function to send a ping to Irene that something is wrong with emote services."""
-        content = const.ERROR_ROLE_MENTION
+        content = self.bot.error_ping
         embed = Embed(
             title=f"Problem with {service} emotes",
             description=f"Looks like emote `{emote}` is no longer present in the channel.",
             colour=colour,
         ).set_footer(text="but it was previously used for @Irene_s_Bot emotes")
-        await self.bot.exc_manager.error_webhook.send(content=content, embed=embed)
+        await self.bot.error_webhook.send(content=content, embed=embed)
 
     async def cross_check_emotes(self, api_emotes: list[str], bot_emotes: type[StrEnum], colour: int) -> None:
         """Cross check between emote list in `utils.const` and list from 3rd party emote service API."""

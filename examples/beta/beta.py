@@ -1,4 +1,4 @@
-#  ruff: noqa: D101, D102, D103
+#  ruff: noqa: D101, D102, D103, T201
 
 from __future__ import annotations
 
@@ -15,6 +15,6 @@ class BetaTest(BetaCog):
         pass
 
 
-def prepare(bot: IrenesBot) -> None:
-    if platform.system() == "Windows":
-        bot.add_cog(BetaTest(bot))
+async def setup(bot: IrenesBot) -> None:
+    if __name__ in bot.extensions:
+        await bot.add_component(BetaTest(bot))

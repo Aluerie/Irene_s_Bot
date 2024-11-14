@@ -3,18 +3,14 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import platform
 import traceback
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import discord
-
-import config
-from utils import const
-
 if TYPE_CHECKING:
     from collections.abc import Generator
+
+    import discord
 
     from .bot import IrenesBot
 
@@ -31,7 +27,6 @@ class ExceptionManager:
         "errors_cache",
         "_lock",
         "_most_recent",
-        "error_webhook",
     )
 
     def __init__(self, bot: IrenesBot, *, cooldown: datetime.timedelta = datetime.timedelta(seconds=5)) -> None:
@@ -40,10 +35,6 @@ class ExceptionManager:
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._most_recent: datetime.datetime | None = None
-
-        self.error_webhook: discord.Webhook = discord.Webhook.from_url(
-            url=config.ERROR_HANDLER_WEBHOOK, session=self.bot.session
-        )
 
     def _yield_code_chunks(self, iterable: str, *, chunks_size: int = 2000) -> Generator[str, None, None]:
         codeblocks: str = "```py\n{}```"
@@ -73,16 +64,14 @@ class ExceptionManager:
 
         It is not recommended to call this yourself, call `register_error` instead.
         """
-        # if platform.system() == "Windows":
-        #     return
 
         code_chunks = list(self._yield_code_chunks(traceback))
 
         if mention:
-            await self.error_webhook.send(const.ERROR_ROLE_MENTION)
+            await self.bot.error_webhook.send(self.bot.error_ping)
 
         for chunk in code_chunks:
-            await self.error_webhook.send(chunk)
+            await self.bot.error_webhook.send(chunk)
 
         if mention:
-            await self.error_webhook.send(embed=embed)
+            await self.bot.error_webhook.send(embed=embed)

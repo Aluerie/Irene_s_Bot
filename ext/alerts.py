@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from bot import IrenesBot
 
-log = logging.getLogger("alerts")
+log = logging.getLogger(__name__)
 
 
 class Alerts(IrenesComponent):

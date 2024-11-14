@@ -123,11 +123,10 @@ class LogsViaWebhook(IrenesComponent):
 
 async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    if not __name__ in bot.extensions:
+    if __name__ in bot.extensions:
         # check if the extension is listed in extensions
-        return
 
-    cog = LogsViaWebhook(bot)
-    await bot.add_component(LogsViaWebhook(bot))
-    bot.logs_via_webhook_handler = handler = LoggingHandler(cog)
-    logging.getLogger().addHandler(handler)
+        cog = LogsViaWebhook(bot)
+        await bot.add_component(LogsViaWebhook(bot))
+        bot.logs_via_webhook_handler = handler = LoggingHandler(cog)
+        logging.getLogger().addHandler(handler)

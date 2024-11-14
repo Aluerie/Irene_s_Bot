@@ -4,11 +4,12 @@ import asyncio
 import datetime
 import random
 import re
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, TypedDict, override
 
+from discord import Embed
 from twitchio.ext import commands
 
-from bot import IrenesComponent
+from bot import IrenesComponent, irenes_loop
 from utils import const, formats
 
 if TYPE_CHECKING:
@@ -23,12 +24,23 @@ if TYPE_CHECKING:
         first_times: int
 
 
+FIRST_ID: str = "013b19fc-8024-4416-99a4-8cf130305b1f"
+
+
 class Counters(IrenesComponent):
     """Track some silly number counters of how many times this or that happened."""
 
     def __init__(self, bot: IrenesBot) -> None:
         super().__init__(bot)
         self.last_erm_notification: datetime.datetime = datetime.datetime.now(datetime.UTC)
+
+    @override
+    async def component_load(self) -> None:
+        self.check_first_reward.start()
+
+    @override
+    async def component_teardown(self) -> None:
+        self.check_first_reward.cancel()
 
     # ERM COUNTERS
 
@@ -82,10 +94,7 @@ class Counters(IrenesComponent):
     async def first_counter(self, redemption: twitchio.ChannelPointsRedemptionAdd) -> None:
         """Count all redeems for the reward 'First'."""
 
-        if redemption.reward.title != "First!" or redemption.broadcaster.id != const.UserID.Irene:
-            # Secure Irene channel and that it is exactly "First!" redeem
-            # a bit scary since I can rename it one day and then we lose the feature but not sure if there is a better way
-            # todo: create a routine checking if we have a channel point reward named First as a future fool-proof thing
+        if redemption.reward.id != FIRST_ID or redemption.broadcaster.id != const.UserID.Irene:
             return
 
         query = """--sql
@@ -142,6 +151,30 @@ class Counters(IrenesComponent):
         """
         content = " ".join(const.DIGITS)
         await ctx.send(content)
+
+    @irenes_loop(count=1)  # time=[datetime.time(hour=4, minute=59)])
+    async def check_first_reward(self) -> None:
+        """The task that ensures the reward "First" under a specific id exists.
+
+        Just a fool proof measure in case I randomly snap and delete it.
+        """
+        if datetime.datetime.now(datetime.UTC).day != 14:
+            # simple way to make a task run once/month
+            return
+
+        custom_rewards = await self.irene.fetch_custom_rewards()
+        for reward in custom_rewards:
+            if reward.id == FIRST_ID:
+                # we good
+                break
+        else:
+            # we bad
+            content = self.bot.error_ping
+            embed = Embed(
+                description='Looks like you deleted "First!" channel points reward from the channel.',
+                colour=0x345245,
+            ).set_footer(text="WTF, bring it back!")
+            await self.bot.error_webhook.send(content=content, embed=embed)
 
 
 async def setup(bot: IrenesBot) -> None:

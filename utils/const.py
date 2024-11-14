@@ -2,8 +2,6 @@ from enum import StrEnum
 
 # ruff: noqa: N815
 
-ERROR_ROLE_MENTION = "<@&1116171071528374394>"
-
 
 class UserID(StrEnum):
     """Known/special user IDs."""
@@ -70,6 +68,7 @@ class STV(StrEnum):
 
     Adge = "Adge"
     ApuBritish = "ApuBritish"
+    AYAYA = "AYAYA"
     Cinema = "Cinema"
     DankApprove = "DankApprove"
     dankFix = "dankFix"

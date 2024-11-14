@@ -210,7 +210,7 @@ class IrenesBot(commands.Bot):
         for row in rows:
             await self.add_token(row["token"], row["refresh"])
 
-    # @override  # TODO: why it's not an override
+    # @override
     async def event_ready(self) -> None:
         log.info("Irene_s_Bot is ready as bot_id = %s", self.bot_id)
         if "ext.dota" in self.extensions:
@@ -363,6 +363,16 @@ class IrenesBot(commands.Bot):
     def logger_webhook(self) -> discord.Webhook:
         """A webhook in hideout's #logger channel."""
         return self.webhook_from_url(config.LOGGER_WEBHOOK)
+
+    @discord.utils.cached_property
+    def error_webhook(self) -> discord.Webhook:
+        """A webhook in hideout server to send errors/notifications to the developer(-s)."""
+        return self.webhook_from_url(config.ERROR_WEBHOOK)
+
+    @property
+    def error_ping(self) -> str:
+        """Error Role ping used to notify Irene about some errors."""
+        return config.ERROR_PING
 
     async def irene_stream(self) -> twitchio.Stream | None:
         return next(iter(await self.fetch_streams(user_ids=[const.UserID.Irene])), None)

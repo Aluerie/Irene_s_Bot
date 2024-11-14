@@ -281,6 +281,11 @@ class DefaultCommands(IrenesComponent):
         await ctx.send(answer)
 
     @commands.command()
+    async def about(self, ctx: commands.Context) -> None:
+        """A bit bio information about the bot."""
+        await ctx.send(f"I'm a personal Irene's bot, made by Irene. {const.STV.AYAYA}")
+
+    @commands.command()
     async def source(self, ctx: commands.Context) -> None:
         """Get the link to the bot's GitHub repository."""
         await ctx.send(f"{self.bot.repo} {const.STV.DankReading}")
