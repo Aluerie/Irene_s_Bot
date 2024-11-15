@@ -16,10 +16,16 @@ except ModuleNotFoundError:
 
 # EXTENSIONS
 
-# write extensions (!) with "ext." prefix here:
-DISABLED_EXTENSIONS = (
+# write extensions (!) with "ext." prefix in the following tuples:
+DISABLED_EXTENSIONS: tuple[str, ...] = (
+    # extensions that should not be loaded
     "ext.beta",
     "ext.dota",
+)
+
+CORE_EXTENSIONS: tuple[str, ...] = (
+    # extensions that should not loaded first
+    "ext.logs_via_webhook",
 )
 
 
@@ -30,16 +36,13 @@ def get_extensions() -> tuple[str, ...]:
     else:
         # assume running full bot functionality (besides `DISABLED_EXTENSIONS`)
 
-        # I want "core_extensions" to be loaded asap
-        core_extensions: tuple[str, ...] = ("ext.logs_via_webhook",)
         all_extensions = tuple(
             module.name
             for module in iter_modules(__path__, f"{__package__}.")
             if module.name not in DISABLED_EXTENSIONS
         )
-        temp = tuple(set(all_extensions).difference(core_extensions))
-
-        return core_extensions + temp
+        temp = tuple(set(all_extensions).difference(CORE_EXTENSIONS))
+        return CORE_EXTENSIONS + temp
 
 
 EXTENSIONS = get_extensions()

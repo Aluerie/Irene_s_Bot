@@ -41,7 +41,7 @@ class Alerts(IrenesComponent):
             # channel = self.get_channel(payload.broadcaster)
             await event.broadcaster.send_message(
                 sender=self.bot.bot_id,
-                message=f"Hey, Irene, thanks for redeeming, I think bot is working {const.FFZ.PepoG}",
+                message=f"Thanks, I think bot is working {const.FFZ.PepoG}",
             )
 
     # SECTION 2

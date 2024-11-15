@@ -86,7 +86,7 @@ class DefaultCommands(IrenesComponent):
     @commands.command(aliases=["hi", "yo"])
     async def hello(self, ctx: commands.Context) -> None:
         """Hello."""
-        await ctx.send(f"{const.STV.hello} @{ctx.chatter.display_name} {const.STV.yo}")
+        await ctx.send(const.STV.hello)
 
     @commands.command()
     async def love(self, ctx: commands.Context, *, arg: str) -> None:
