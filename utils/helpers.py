@@ -49,7 +49,8 @@ class measure_time:  # noqa: N801 # it's fine to call classes lowercase if they 
 
     def measure_time(self) -> None:
         # PT for Performance Time, maybe there are better ideas for abbreviations.
-        self.log.debug("%s PT: %.3f secs", self.name, perf_counter() - self.start)
+        self.end = end = perf_counter() - self.start
+        self.log.debug("%s PT: %.3f secs", self.name, end)
 
     def __exit__(self, *_: Any) -> None:
         self.measure_time()

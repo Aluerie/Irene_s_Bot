@@ -135,6 +135,7 @@ class RPStatus(MyStrEnum):
     Spectating = "#DOTA_RP_SPECTATING"
     PrivateLobby = "#DOTA_RP_PRIVATE_LOBBY"
     BotPractice = "#DOTA_RP_BOTPRACTICE"
+    Coaching = "#DOTA_RP_COACHING"
 
     @classproperty
     def KNOWN_DISPLAY_NAMES(cls: type[Self]) -> Mapping[RPStatus, str]:  # type: ignore # noqa N802, N805
@@ -150,6 +151,7 @@ class RPStatus(MyStrEnum):
             cls.Spectating: "Spectating",
             cls.PrivateLobby: "Private Lobby",
             cls.BotPractice: "Bot Practice",
+            cls.Coaching: "Coaching",
         }
 
     @property

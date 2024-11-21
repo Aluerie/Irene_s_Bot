@@ -184,7 +184,7 @@ class DotaCommands(IrenesComponent):
 
     # LAST GAME
 
-    @commands.command(aliases=["lg"])
+    @commands.command(aliases=["lg", "lm"])
     async def last_game(self, ctx: commands.Context) -> None:
         async with helpers.measure_time() as perf:
             last_game = self.streamer.last_game

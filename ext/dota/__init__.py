@@ -8,6 +8,6 @@ if TYPE_CHECKING:
     from bot import IrenesBot
 
 
-def prepare(bot: IrenesBot) -> None:
+async def setup(bot: IrenesBot) -> None:
     """Load IrenesBot extension. Framework of twitchio."""
-    bot.add_cog(DotaCommands(bot))
+    await bot.add_component(DotaCommands(bot))
