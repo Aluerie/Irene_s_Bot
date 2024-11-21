@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, override
 
-from steam import PersonaState
 from steam.ext.dota2 import Client
 
 try:
@@ -29,7 +28,7 @@ class Dota2Client(Client):
     """
 
     def __init__(self, twitch_bot: IrenesBot) -> None:
-        super().__init__(state=PersonaState.Invisible)
+        super().__init__()  # state=PersonaState.Invisible) from steam import PersonaState
         self.twitch_bot: IrenesBot = twitch_bot
 
     @override

@@ -338,7 +338,7 @@ class Streamer:
 
         if not mapping:
             return "0 W - 0 L"
-        return ", ".join(f"{category.name} {wl[1]} W - {wl[0]} L" for category, wl in mapping.items())
+        return " \N{BULLET} ".join(f"{category.name} {wl[1]} W - {wl[0]} L" for category, wl in mapping.items())
 
     async def mmr_command_response(self) -> str:
         query = "SELECT mmr, medal FROM ttv_dota_streamers WHERE account_id = $1"
