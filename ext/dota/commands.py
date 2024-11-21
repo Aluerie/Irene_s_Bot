@@ -84,7 +84,10 @@ class DotaCommands(IrenesComponent):
 
     @commands.Component.listener("event_rich_presence_changed")
     async def rich_presence_changed(self, status: RPStatus) -> None:
-        await self.debug_send(f"RP Change: {status}")
+        if status.name == f"{status.__class__.__name__}UnknownValue":
+            await self.debug_send(f'RP Change: Unknown "{status.value}"')
+        else:
+            await self.debug_send(f"RP Change: {status}")
 
     @commands.Component.listener("event_reset_streamer")
     async def reset_streamer(self, event_msg: str) -> None:
