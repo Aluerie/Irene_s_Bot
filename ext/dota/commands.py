@@ -41,7 +41,7 @@ class DotaCommands(IrenesComponent):
 
     async def debug_send(self, message: str) -> None:
         if self.debug_mode:
-            await self.deliver(f"[DEBUG] {message}")
+            await self.deliver(f"[debug] {message}")
 
     @override
     async def component_load(self) -> None:
