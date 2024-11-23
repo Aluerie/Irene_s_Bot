@@ -128,6 +128,7 @@ class RPStatus(MyStrEnum):
     Idle = "#DOTA_RP_IDLE"
     MainMenu = "#DOTA_RP_INIT"
     Finding = "#DOTA_RP_FINDING_MATCH"
+    WaitingToLoad = "#DOTA_RP_WAIT_FOR_PLAYERS_TO_LOAD"
     HeroSelection = "#DOTA_RP_HERO_SELECTION"
     Strategy = "#DOTA_RP_STRATEGY_TIME"
     PreGame = "#DOTA_RP_PRE_GAME"
@@ -137,6 +138,9 @@ class RPStatus(MyStrEnum):
     BotPractice = "#DOTA_RP_BOTPRACTICE"
     Coaching = "#DOTA_RP_COACHING"
 
+    # EXTRA
+    CustomGame = "#DOTA_RP_GAME_IN_PROGRESS_CUSTOM"
+
     @classproperty
     def KNOWN_DISPLAY_NAMES(cls: type[Self]) -> Mapping[RPStatus, str]:  # type: ignore # noqa N802, N805
         return {
@@ -144,6 +148,7 @@ class RPStatus(MyStrEnum):
             cls.Idle: "Main Menu (Idle)",
             cls.MainMenu: "Main Menu",
             cls.Finding: "Finding A Match",
+            cls.WaitingToLoad: "Waiting For Players to Load",
             cls.HeroSelection: "Hero Selection",
             cls.Strategy: "Strategy Phase",
             cls.PreGame: "PreGame",
@@ -152,6 +157,7 @@ class RPStatus(MyStrEnum):
             cls.PrivateLobby: "Private Lobby",
             cls.BotPractice: "Bot Practice",
             cls.Coaching: "Coaching",
+            cls.CustomGame: "Custom Game",
         }
 
     @property

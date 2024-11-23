@@ -95,11 +95,11 @@ class DotaCommands(IrenesComponent):
 
     @commands.Component.listener("event_match_data_ready")
     async def announce_data_ready(self) -> None:
-        await self.debug_send(f"Game Data Ready! Commands have all the data now. {const.STV.wickedchad}")
+        await self.debug_send(f"Players+Match Data Ready! (1/2) {const.STV.wickedchad}")
 
     @commands.Component.listener("event_match_hero_ready")
     async def announce_hero_ready(self) -> None:
-        await self.debug_send(f"Hero Info Ready! Commands now have hero names. {const.STV.wickedchad}")
+        await self.debug_send(f"Hero Info Ready! (2/2) {const.STV.wickedchad}")
 
     # @commands.Component.listener("event_check_last_games")
     # async def start_checking_match_outcome(self, match_id: int, hero: Hero) -> None:
@@ -177,6 +177,15 @@ class DotaCommands(IrenesComponent):
             active_match = await self.get_active_match(is_hero=False)
             response = await active_match.profile(argument)
         await ctx.send(self.fmt_response(response, active_match.is_watch, perf))
+
+    @profile.error
+    async def profile_error(self, payload: commands.CommandErrorPayload) -> None:
+        if isinstance(payload.exception, commands.MissingRequiredArgument):
+            await payload.context.send(
+                "You need to provide a hero name (i.e. VengefulSpirit , PA, Mireska, etc) or player slot (i.e. 9, DarkGreen )"
+            )
+        else:
+            raise payload.exception
 
     @commands.command(aliases=["matchid"])
     async def match_id(self, ctx: commands.Context) -> None:
@@ -277,6 +286,6 @@ class DotaCommands(IrenesComponent):
     @check_streamers_rich_presence.before_loop
     async def before_check_streamers_rich_presence(self) -> None:
         """Wait for the IrenesBot, Dota Client and Game Coordinator ready-s."""
-        await self.bot.wait_for("ready")
+        await self.bot.wait_until_ready()
         await self.bot.dota.wait_until_ready()
         await self.bot.dota.wait_until_gc_ready()

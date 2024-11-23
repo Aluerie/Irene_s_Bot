@@ -45,7 +45,8 @@ class Timers(IrenesComponent):
     @commands.Component.listener(name="irene_online")
     async def stream_online_start_the_task(self) -> None:
         """Start the timer task when stream goes online."""
-        self.timer_task.start()
+        if not self.timer_task.is_running():
+            self.timer_task.start()
 
     @commands.Component.listener(name="irene_offline")
     async def stream_offline_cancel_the_task(self) -> None:
@@ -81,7 +82,7 @@ class Timers(IrenesComponent):
 
     @timer_task.before_loop
     async def timer_task_before_loop(self) -> None:
-        await self.bot.wait_for("ready")
+        await self.bot.wait_until_ready()
 
 
 async def setup(bot: IrenesBot) -> None:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, TypedDict, override
+from typing import TYPE_CHECKING, Any, TypedDict, override
 
 import discord
 import twitchio
@@ -172,13 +172,13 @@ class IrenesBot(commands.Bot):
         # Raids to the channel                  No authorization required
         sub = eventsub.ChannelRaidSubscription(to_broadcaster_user_id=broadcaster)
         await self.subscribe_websocket(payload=sub)
-        # Stream went offline                   No authorization required
+        # ✅ Stream went offline                   No authorization required
         sub = eventsub.StreamOfflineSubscription(broadcaster_user_id=broadcaster)
         await self.subscribe_websocket(payload=sub)
-        # Stream went live                      No authorization required
+        # ✅ Stream went live                      No authorization required
         sub = eventsub.StreamOnlineSubscription(broadcaster_user_id=broadcaster)
         await self.subscribe_websocket(payload=sub)
-        # Channel Update (title/game)           No authorization required
+        # ✅ Channel Update (title/game)           No authorization required
         sub = eventsub.ChannelUpdateSubscription(broadcaster_user_id=broadcaster)
         await self.subscribe_websocket(payload=sub)
 
@@ -199,7 +199,7 @@ class IrenesBot(commands.Bot):
                 refresh = excluded.refresh;
         """
         await self.pool.execute(query, resp.user_id, token, refresh)
-        log.info("Added token to the database for user: %s", resp.user_id)
+        log.debug("Added token to the database for user: %s", resp.user_id)
         return resp
 
     @override
@@ -219,6 +219,9 @@ class IrenesBot(commands.Bot):
     @override
     async def event_command_error(self, payload: commands.CommandErrorPayload) -> None:
         """Called when error happens during command invoking."""
+        command: commands.Command[Any, ...] | None = payload.context.command
+        if command and command.has_error and payload.context.error_dispatched:
+            return
 
         ctx = payload.context
         error = payload.exception
@@ -272,7 +275,7 @@ class IrenesBot(commands.Bot):
             #     await ctx.send(str(error))
 
             case _:
-                await ctx.send(f"{error.__class__.__name__}: {error}")
+                await ctx.send(f"{error.__class__.__name__}: {config.replace_secrets(str(error))}")
 
                 command_name = getattr(ctx.command, "name", "unknown")
 
@@ -380,13 +383,13 @@ class IrenesBot(commands.Bot):
     @irenes_loop(count=1)
     async def check_if_online(self) -> None:
         if await self.irene_stream():
-            self.dispatch("irene_online")
             self.irene_online = True
+            self.dispatch("irene_online")
 
     async def event_stream_online(self, _: twitchio.StreamOnline) -> None:
-        self.dispatch("irene_online")
         self.irene_online = True
+        self.dispatch("irene_online")
 
     async def event_stream_offline(self, _: twitchio.StreamOffline) -> None:
-        self.dispatch("irene_offline")
         self.irene_online = False
+        self.dispatch("irene_offline")

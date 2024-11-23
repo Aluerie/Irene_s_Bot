@@ -143,7 +143,6 @@ class Streamer:
             case RPStatus.HeroSelection | RPStatus.Strategy | RPStatus.Playing:
                 # Streamer is in a match as a player
                 watchable_game_id = rich_presence.get("WatchableGameID")
-                watching_server = rich_presence.get("watching_server")
 
                 if watchable_game_id is None:
                     # something is off
@@ -169,14 +168,11 @@ class Streamer:
                     # all is good
                     if not self.play_match:
                         # started playing new match
-                        self.play_match = PlayMatch(self.bot, watchable_game_id, watching_server, self.account_id)
-                    elif (
-                        self.play_match.watchable_game_id != watchable_game_id
-                        or self.play_match.watching_server != watching_server
-                    ):
+                        self.play_match = PlayMatch(self.bot, watchable_game_id, self.account_id)
+                    elif self.play_match.watchable_game_id != watchable_game_id:
                         self.reset("Started new match bypassing Menu")
                         # started playing new match right so fast after bypassing Menu
-                        self.play_match = PlayMatch(self.bot, watchable_game_id, watching_server, self.account_id)
+                        self.play_match = PlayMatch(self.bot, watchable_game_id, self.account_id)
 
             case RPStatus.Spectating:
                 watching_server = rich_presence.get("watching_server")
@@ -343,7 +339,7 @@ class Streamer:
     async def mmr_command_response(self) -> str:
         query = "SELECT mmr, medal FROM ttv_dota_streamers WHERE account_id = $1"
         row: MMRCommandQuery = await self.bot.pool.fetchrow(query, self.account_id)
-        return f"[Estimated] {row['mmr']} \N{BULLET} {row['medal']}"
+        return f"[Placeholder number, haven't played ranked since 2021] {row['mmr']} \N{BULLET} {row['medal']}"
 
 
 class LastGame:
@@ -441,18 +437,18 @@ class Player:
 
 
 class Match(abc.ABC):
+    if TYPE_CHECKING:
+        server_steam_id: int | None
+
     def __init__(
         self,
         bot: IrenesBot,
         is_watch: bool,
-        watching_server: str | None,
         *,
         unsupported_error: str = "",
     ) -> None:
         self.bot: IrenesBot = bot
         self.is_watch: bool = is_watch
-        self.watching_server: str | None = watching_server
-        self.server_steam_id: int | None = convert_id3_to_id64(watching_server) if watching_server else None
 
         self.match_id: int | None = None
         self.players: dict[int, Player] | None = None
@@ -470,7 +466,7 @@ class Match(abc.ABC):
         if not self.players:
             return "No players data yet."
 
-        response_parts = [f"{player.identifier} {player.medal}" for player in self.players.values()]
+        response_parts = [f"{player.identifier} {player.medal or '?'}" for player in self.players.values()]
         # \N{MIDDLE DOT}
         return " \N{BULLET} ".join(response_parts)  # [:5]) + " VS " + ", ".join(response_parts[5:])
 
@@ -489,14 +485,15 @@ class Match(abc.ABC):
         return "Lifetime Games: " + " \N{BULLET} ".join(response_parts)
 
     async def profile(self, argument: str) -> str:
-        if self.server_steam_id is None:
-            return "This match doesn't support `real_time_stats`."
         if not self.players:
             return "No player data yet."
+        if self.server_steam_id is None:
+            return "This match doesn't support `real_time_stats`."
 
         try:
             match = await self.bot.steam_web_api.get_real_time_stats(self.server_steam_id)
-        except:
+        except Exception as exc:
+            log.error("!items errored out at `get_real_time_stats` step", exc_info=exc)
             if self.lobby_type == LobbyType.NewPlayerMode:
                 return "New Player Mode matches don't support `real_time_stats`."
             else:
@@ -564,18 +561,18 @@ class PlayMatch(Match):
         Streamer's steam_id32 id.
     watchable_game_id:
         Used to compare...
-    watching_server:
-        Used to compare...
     """
+
+    if TYPE_CHECKING:
+        server_steam_id: int | None
 
     def __init__(
         self,
         bot: IrenesBot,
         watchable_game_id: str,
-        watching_server: str | None,
         account_id: int,
     ) -> None:
-        super().__init__(bot, False, watching_server)
+        super().__init__(bot, False)
         self.watchable_game_id: str = watchable_game_id
         self.lobby_id: int = int(watchable_game_id)
         self.account_id: int = account_id
@@ -603,6 +600,7 @@ class PlayMatch(Match):
             raise errors.PlaceholderRaiseError(msg)
 
         # match data
+        self.server_steam_id = match.server_steam_id
         self.match_id = match.id
         self.average_mmr = match.average_mmr
         self.lobby_type = match.lobby_type
@@ -691,13 +689,17 @@ class PlayMatch(Match):
 
 
 class WatchMatch(Match):
-    if TYPE_CHECKING:
-        # if None - exception is raised in `streamer.update()`
-        watching_server: str
-        server_steam_id: int
+    """Class representing Spectated Match in Dota 2 client.
+
+    These are usually
+    *  2 minutes delayed from live.
+    * have valid `server_steam_id` in Rich Presence
+    """
 
     def __init__(self, bot: IrenesBot, watching_server: str) -> None:
-        super().__init__(bot, True, watching_server)
+        super().__init__(bot, True)
+        self.watching_server: str = watching_server
+        self.server_steam_id: int = convert_id3_to_id64(watching_server)
 
     def reset(self) -> None:
         self.update_data.cancel()
