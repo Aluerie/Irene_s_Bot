@@ -532,10 +532,16 @@ class Match(abc.ABC):
                     'Try something like !item "PA / 7 / PhantomAssassin / Blue" (but for your player).'
                 )
 
-        team = int(player_slot > 4)
-        team_slot = player_slot - 5 * team
+        team_ord = int(player_slot > 4)  # team_ord = 1 for Radiant, 2 for Dire
+        team_slot = player_slot - 5 * team_ord  # 0 1 2 3 4 for Radiant, 5 6 7 8 9 for Dire
 
-        api_player = match["teams"][team]["players"][team_slot]
+        for team in match["teams"]:
+            if team["team_number"] == team_ord + 2:  # team_number = 2 for Radiant, 3 for Dire
+                api_player = team["players"][team_slot]
+                break
+        else:
+            msg = "Didn't find the player's team info Oups"
+            raise errors.PlaceholderRaiseError(msg )
 
         prefix = f"[2m delay] {Hero.try_value(api_player['heroid'])} lvl {api_player['level']}"
         net_worth = f"NW: {api_player['net_worth']}"
