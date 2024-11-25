@@ -24,7 +24,7 @@ class Development(IrenesComponent):
     """Dev Only Commands."""
 
     @guards.is_vps()
-    # @commands.is_owner()
+    @commands.is_owner()
     @commands.command(aliases=["kill"])
     async def maintenance(self, ctx: commands.Context) -> None:
         """Kill the bot process on VPS.
@@ -78,6 +78,26 @@ class Development(IrenesComponent):
     async def load(self, ctx: commands.Context, *, extension: Annotated[str, to_extension]) -> None:
         await self.bot.load_module(extension)
         await ctx.send(f"{const.STV.DankApprove} loaded {extension}")
+
+    @commands.is_owner()
+    @commands.command()
+    async def online(self, ctx: commands.Context) -> None:
+        """Make the bot treat streamer as online.
+
+        * forces availability for commands which normally are only allowed during online streams
+            via `@guards.is_online` (useful for debug);
+        * If somehow eventsub missed stream_online notification - this can "manually"
+            fix the problem of soft-locking the commands.
+        """
+        self.bot.irene_online = True
+        await ctx.send(f"I'll treat {ctx.broadcaster.display_name} as online now {const.STV.dankHey}")
+
+    @commands.is_owner()
+    @commands.command()
+    async def offline(self, ctx: commands.Context) -> None:
+        """Make the bot treat streamer as offline."""
+        self.bot.irene_online = False
+        await ctx.send(f"I'll treat {ctx.broadcaster.display_name} as offline now {const.STV.donkSad}")
 
 
 async def setup(bot: IrenesBot) -> None:

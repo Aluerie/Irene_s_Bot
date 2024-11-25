@@ -85,6 +85,10 @@ class DotaCommands(IrenesComponent):
     @commands.Component.listener("event_rich_presence_changed")
     async def rich_presence_changed(self, status: RPStatus) -> None:
         if status.name == f"{status.__class__.__name__}UnknownValue":
+            if "Crownfall" in status.value:
+                # skip crownfall mini-games for now
+                # TODO: remove when Crownfall is over, or maybe implement a series of block-words so like Deadlock statues don't show up as well;
+                return
             await self.debug_send(f'RP Change: Unknown "{status.value}"')
         else:
             await self.debug_send(f"RP Change: {status}")
