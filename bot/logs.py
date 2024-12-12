@@ -44,7 +44,7 @@ def setup_logging() -> Generator[Any, Any, Any]:
             filename=".temp/irenesbot.log",
             encoding="utf-8",
             mode="w",
-            maxBytes=10 * 1024 * 1024,  # 16 MiB
+            maxBytes=24 * 1024 * 1024,  # MiB
             backupCount=2,  # Rotate through 2 files
         )
         file_handler.setFormatter(get_log_fmt(handler))
